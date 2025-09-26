@@ -90,10 +90,19 @@ export default function DetalhesApoio() {
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Only allow letters, numbers, @ and spaces, max 20 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\s]/g, '');
+    // Allow letters, numbers, spaces and common punctuation, max 20 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
     if (validChars.length <= 20) {
       setNome(validChars);
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, @, dots, hyphens, underscores, max 100 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\.\-\_]/g, '');
+    if (validChars.length <= 100) {
+      setEmail(validChars);
     }
   };
 
@@ -367,70 +376,207 @@ export default function DetalhesApoio() {
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl font-bold">{apoio.titulo}</h1>
 
-          {/* Image */}
-          {apoio.imagem_url && (
-            <div className="aspect-video overflow-hidden rounded-lg">
-              <img
-                src={apoio.imagem_url}
-                alt={apoio.titulo}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          )}
-
-          {/* Progress Component */}
-          <Card>
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center justify-between text-base sm:text-xl">
-                <div className="flex items-center gap-2">
-                  <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
-                  Progresso da campanha
-                </div>
-                {campanhaFinalizada && (
-                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    META ATINGIDA
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
-              {/* Progress */}
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="font-medium">
-                    R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                  </span>
-                  <span className="text-muted-foreground">
-                    de R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                  </span>
-                </div>
-                
-                <Progress 
-                  value={Math.min(progresso, 100)} 
-                  className="h-3 sm:h-4 bg-secondary"
+          {/* Desktop Layout - Image and Progress Side by Side */}
+          <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+            {/* Image - Desktop */}
+            {apoio.imagem_url && (
+              <div className="aspect-[4/3] overflow-hidden rounded-lg">
+                <img
+                  src={apoio.imagem_url}
+                  alt={apoio.titulo}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
-                
-                <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
-                  <span>{progresso.toFixed(1)}% concluído</span>
-                  <span>{apoiadores.length} apoiadores</span>
-                </div>
               </div>
+            )}
 
-              {/* Campaign completion message */}
-              {campanhaFinalizada && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <p className="text-green-800 font-medium text-sm sm:text-base">
-                    {apoio.status === 'concluido'
-                      ? '🏁 Esta campanha foi finalizada pelo criador.'
-                      : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
-                    }
-                  </p>
+            {/* Progress Component - Desktop */}
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center justify-between text-base sm:text-xl">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+                    Progresso da campanha
+                  </div>
+                  {campanhaFinalizada && (
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      META ATINGIDA
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
+                {/* Progress */}
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="font-medium">
+                      R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                    </span>
+                    <span className="text-muted-foreground">
+                      de R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                    </span>
+                  </div>
+                  
+                  <Progress 
+                    value={Math.min(progresso, 100)} 
+                    className="h-3 sm:h-4 bg-secondary"
+                  />
+                  
+                  <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
+                    <span>{progresso.toFixed(1)}% concluído</span>
+                    <span>{apoiadores.length} apoiadores</span>
+                  </div>
                 </div>
-              )}
 
-              {/* Support Button - Usa Drawer em mobile, Dialog em desktop */}
-              {isMobile ? (
+                {/* Campaign completion message */}
+                {campanhaFinalizada && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                    <p className="text-green-800 font-medium text-sm sm:text-base">
+                      {apoio.status === 'concluido'
+                        ? '🏁 Esta campanha foi finalizada pelo criador.'
+                        : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                      }
+                    </p>
+                  </div>
+                )}
+
+                {/* Support Button - Desktop */}
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      disabled={campanhaFinalizada}
+                    >
+                      <Heart className="h-4 w-4 mr-2" />
+                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
+                    </Button>
+                  </DialogTrigger>
+                    
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Apoiar: {apoio.titulo}</DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="valor">Valor do apoio (R$)</Label>
+                        <Input
+                          id="valor"
+                          type="text"
+                          placeholder="Digite o valor (ex: 10,50)"
+                          value={valor}
+                          onChange={handleValorChange}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="nome">Seu nome</Label>
+                        <Input
+                          id="nome"
+                          placeholder="Como você quer aparecer (mín. 3 chars)"
+                          value={nome}
+                          onChange={handleNomeChange}
+                          maxLength={20}
+                        />
+                      </div>
+                        
+                      <div>
+                        <Label htmlFor="email">Email para contato</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={handleEmailChange}
+                        />
+                      </div>
+
+                      <Button
+                        onClick={handleApoiar}
+                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {campanhaFinalizada
+                          ? 'Campanha finalizada'
+                          : paymentLoading
+                            ? 'Processando...'
+                            : `Apoiar com R$ ${valor || '0,00'}`
+                        }
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Mobile Layout - Image and Progress Stacked */}
+          <div className="lg:hidden space-y-4 sm:space-y-6">
+            {/* Image - Mobile */}
+            {apoio.imagem_url && (
+              <div className="aspect-video overflow-hidden rounded-lg">
+                <img
+                  src={apoio.imagem_url}
+                  alt={apoio.titulo}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
+            {/* Progress Component - Mobile */}
+            <Card>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center justify-between text-base sm:text-xl">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+                    Progresso da campanha
+                  </div>
+                  {campanhaFinalizada && (
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      META ATINGIDA
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
+                {/* Progress */}
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="font-medium">
+                      R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                    </span>
+                    <span className="text-muted-foreground">
+                      de R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                    </span>
+                  </div>
+                  
+                  <Progress 
+                    value={Math.min(progresso, 100)} 
+                    className="h-3 sm:h-4 bg-secondary"
+                  />
+                  
+                  <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
+                    <span>{progresso.toFixed(1)}% concluído</span>
+                    <span>{apoiadores.length} apoiadores</span>
+                  </div>
+                </div>
+
+                {/* Campaign completion message */}
+                {campanhaFinalizada && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                    <p className="text-green-800 font-medium text-sm sm:text-base">
+                      {apoio.status === 'concluido'
+                        ? '🏁 Esta campanha foi finalizada pelo criador.'
+                        : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                      }
+                    </p>
+                  </div>
+                )}
+
+                {/* Support Button - Mobile */}
                 <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DrawerTrigger asChild>
                     <Button
@@ -480,7 +626,7 @@ export default function DetalhesApoio() {
                           type="email"
                           placeholder="seu@email.com"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={handleEmailChange}
                           className="text-base"
                         />
                       </div>
@@ -501,172 +647,97 @@ export default function DetalhesApoio() {
                     </div>
                   </DrawerContent>
                 </Drawer>
-              ) : (
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      disabled={campanhaFinalizada}
-                    >
-                      <Heart className="h-4 w-4 mr-2" />
-                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
-                    </Button>
-                  </DialogTrigger>
-                    
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Apoiar: {apoio.titulo}</DialogTitle>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="valor">Valor do apoio (R$)</Label>
-                        <Input
-                          id="valor"
-                          type="text"
-                          placeholder="Digite o valor (ex: 10,50)"
-                          value={valor}
-                          onChange={handleValorChange}
-                        />
-                      </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                      <div>
-                        <Label htmlFor="nome">Seu nome</Label>
-                        <Input
-                          id="nome"
-                          placeholder="Como você quer aparecer (mín. 3 chars)"
-                          value={nome}
-                          onChange={handleNomeChange}
-                          maxLength={20}
-                        />
+          {/* Description, Benefits and Supporters Tabs - Full Width */}
+          <Card className="mb-4 sm:mb-6">
+            <CardContent className="p-0">
+              <Tabs defaultValue="sobre" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-12">
+                  <TabsTrigger value="sobre" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Info className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Sobre</span>
+                    <span className="sm:hidden">Sobre</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="beneficios" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Gift className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Benefícios</span>
+                    <span className="sm:hidden">Benefícios</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="apoiadores" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Apoiadores</span>
+                    <span className="sm:hidden">Apoiadores</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <div className="min-h-[200px]">
+                  <TabsContent value="sobre" className="p-4 sm:p-6 m-0">
+                    <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
+                    <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
+                        {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
                       </div>
-                        
-                      <div>
-                        <Label htmlFor="email">Email para contato</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-
-                      <Button
-                        onClick={handleApoiar}
-                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
-                        className="w-full"
-                        size="lg"
-                      >
-                        {campanhaFinalizada
-                          ? 'Campanha finalizada'
-                          : paymentLoading
-                            ? 'Processando...'
-                            : `Apoiar com R$ ${valor || '0,00'}`
-                        }
-                      </Button>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              )}
+                  </TabsContent>
+                  
+                  <TabsContent value="beneficios" className="p-4 sm:p-6 m-0">
+                    {apoio.beneficios ? (
+                      <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.beneficios}</p>
+                    ) : (
+                      <p className="text-muted-foreground text-sm sm:text-base text-center py-8">
+                        Os benefícios deste apoio serão informados em breve.
+                      </p>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="apoiadores" className="p-4 sm:p-6 m-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base sm:text-lg font-semibold">Apoiadores</h3>
+                      <span className="text-sm text-muted-foreground">({apoiadores.length})</span>
+                    </div>
+                    
+                    {apoiadores.length > 0 ? (
+                      <div className="space-y-3 sm:space-y-4">
+                        {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
+                          <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium text-primary text-sm sm:text-base">
+                                R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                        {isMobile && apoiadores.length > 5 && (
+                          <p className="text-center text-xs text-muted-foreground pt-2">
+                            E mais {apoiadores.length - 5} apoiadores...
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
+                        Seja o primeiro a apoiar esta causa!
+                      </p>
+                    )}
+                  </TabsContent>
+                </div>
+              </Tabs>
             </CardContent>
           </Card>
-
-          {/* Details Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-            {/* Left Column - Details */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-
-              {/* Description, Benefits and Supporters Tabs */}
-              <Card className="mb-4 sm:mb-6">
-                <CardContent className="p-0">
-                  <Tabs defaultValue="sobre" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 h-12">
-                      <TabsTrigger value="sobre" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                        <Info className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Sobre</span>
-                        <span className="sm:hidden">Sobre</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="beneficios" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                        <Gift className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Benefícios</span>
-                        <span className="sm:hidden">Benefícios</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="apoiadores" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Apoiadores</span>
-                        <span className="sm:hidden">Apoiadores</span>
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <div className="min-h-[200px]">
-                      <TabsContent value="sobre" className="p-4 sm:p-6 m-0">
-                        <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
-                        <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
-                            {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
-                          </div>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="beneficios" className="p-4 sm:p-6 m-0">
-                        {apoio.beneficios ? (
-                          <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.beneficios}</p>
-                        ) : (
-                          <p className="text-muted-foreground text-sm sm:text-base text-center py-8">
-                            Os benefícios deste apoio serão informados em breve.
-                          </p>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="apoiadores" className="p-4 sm:p-6 m-0">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-base sm:text-lg font-semibold">Apoiadores</h3>
-                          <span className="text-sm text-muted-foreground">({apoiadores.length})</span>
-                        </div>
-                        
-                        {apoiadores.length > 0 ? (
-                          <div className="space-y-3 sm:space-y-4">
-                            {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
-                              <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
-                                    <p className="text-xs sm:text-sm text-muted-foreground">
-                                      {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-medium text-primary text-sm sm:text-base">
-                                    R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                            {isMobile && apoiadores.length > 5 && (
-                              <p className="text-center text-xs text-muted-foreground pt-2">
-                                E mais {apoiadores.length - 5} apoiadores...
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
-                            Seja o primeiro a apoiar esta causa!
-                          </p>
-                        )}
-                      </TabsContent>
-                    </div>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </div>
       </div>
     </div>
