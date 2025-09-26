@@ -15,12 +15,7 @@ export function useInfinitepayUser() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load user');
         // Mock user for development
-        setUser({
-          id: 'dev-user',
-          name: 'Usuário Desenvolvimento',
-          handle: 'dev-handle',
-          role: 'user'
-        });
+        setUser(null);
       } finally {
         setLoading(false);
       }
