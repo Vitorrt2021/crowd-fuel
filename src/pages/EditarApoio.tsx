@@ -128,10 +128,10 @@ export default function EditarApoio() {
         if (error) throw error;
 
         // Check if user owns this apoio
-        if (user && data.user_id !== user.id) {
+        if (user && Number(data.user_id) !== Number(user.id)) {
           toast({
-            title: `Acesso negado ${data.user_id} ${user.id}`,
-            description: `Você não tem permissão para editar este apoio. ${JSON.stringify(data)}`,
+            title: `Acesso negado`,
+            description: `Você não tem permissão para editar este apoio.`,
             variant: 'destructive',
           });
           navigate('/meus-apoios');
