@@ -21,10 +21,11 @@ interface ApoioCardProps {
 export function ApoioCard({ apoio }: ApoioCardProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
+
   const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
   const valorAtualReais = apoio.valor_atual / 100;
   const metaValorReais = apoio.meta_valor / 100;
+  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor;
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -43,9 +44,16 @@ export function ApoioCard({ apoio }: ApoioCardProps) {
       </CardHeader>
       
       <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-        <CardTitle className="text-base sm:text-xl line-clamp-2 group-hover:text-primary transition-colors">
-          {apoio.titulo}
-        </CardTitle>
+        <div className="space-y-2">
+          <CardTitle className="text-base sm:text-xl line-clamp-2 group-hover:text-primary transition-colors">
+            {apoio.titulo}
+          </CardTitle>
+          {campanhaFinalizada && (
+            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full inline-block">
+              META ATINGIDA
+            </span>
+          )}
+        </div>
         
         <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 sm:line-clamp-3">
           {apoio.descricao}
@@ -71,16 +79,16 @@ export function ApoioCard({ apoio }: ApoioCardProps) {
           </div>
         </div>
         
-        <Button 
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/apoio/${apoio.id}`);
           }}
           className="w-full"
-          variant="outline"
+          variant={campanhaFinalizada ? "default" : "outline"}
           size={isMobile ? "sm" : "default"}
         >
-          Saber mais
+          {campanhaFinalizada ? 'Ver campanha finalizada' : 'Saber mais'}
         </Button>
       </CardContent>
     </Card>
