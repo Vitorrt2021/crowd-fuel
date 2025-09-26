@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      apoiadores: {
+        Row: {
+          apoio_id: string
+          created_at: string
+          email: string
+          id: string
+          nome: string
+          transaction_nsu: string | null
+          valor: number
+        }
+        Insert: {
+          apoio_id: string
+          created_at?: string
+          email: string
+          id?: string
+          nome: string
+          transaction_nsu?: string | null
+          valor: number
+        }
+        Update: {
+          apoio_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          transaction_nsu?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apoiadores_apoio_id_fkey"
+            columns: ["apoio_id"]
+            isOneToOne: false
+            referencedRelation: "apoios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apoios: {
+        Row: {
+          created_at: string
+          descricao: string
+          handle_infinitepay: string
+          id: string
+          imagem_url: string | null
+          meta_valor: number
+          status: string
+          titulo: string
+          updated_at: string
+          user_id: string
+          valor_atual: number
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          handle_infinitepay: string
+          id?: string
+          imagem_url?: string | null
+          meta_valor: number
+          status?: string
+          titulo: string
+          updated_at?: string
+          user_id: string
+          valor_atual?: number
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          handle_infinitepay?: string
+          id?: string
+          imagem_url?: string | null
+          meta_valor?: number
+          status?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+          valor_atual?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
