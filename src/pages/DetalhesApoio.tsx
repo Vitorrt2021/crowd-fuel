@@ -44,7 +44,8 @@ export default function DetalhesApoio() {
   const [apoio, setApoio] = useState<Apoio | null>(null);
   const [apoiadores, setApoiadores] = useState<Apoiador[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [desktopDialogOpen, setDesktopDialogOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
   // Form state
   const [valor, setValor] = useState('');
@@ -263,6 +264,10 @@ export default function DetalhesApoio() {
               description: 'Obrigado por apoiar esta causa.',
             });
 
+            // Close both dialogs
+            setDesktopDialogOpen(false);
+            setMobileDrawerOpen(false);
+
             navigate('/apoio-sucesso');
             return; // Exit the function after successful payment
           }
@@ -439,7 +444,7 @@ export default function DetalhesApoio() {
                 )}
 
                 {/* Support Button - Desktop */}
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <Dialog open={desktopDialogOpen} onOpenChange={setDesktopDialogOpen}>
                   <DialogTrigger asChild>
                     <Button
                       className="w-full"
@@ -575,7 +580,7 @@ export default function DetalhesApoio() {
                 )}
 
                 {/* Support Button - Mobile */}
-                <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
+                <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
                   <DrawerTrigger asChild>
                     <Button
                       className="w-full"
