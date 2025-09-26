@@ -62,28 +62,25 @@ export default function CriarApoio() {
 
   const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, spaces and common punctuation, max 100 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
-    if (validChars.length <= 100) {
-      setTitulo(validChars);
+    // Allow ALL characters including accented ones, max 100 characters
+    if (input.length <= 100) {
+      setTitulo(input);
     }
   };
 
   const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, spaces and common punctuation, max 2000 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;\(\)\n\r]/g, '');
-    if (validChars.length <= 2000) {
-      setDescricao(validChars);
+    // Allow ALL characters including accented ones, max 2000 characters
+    if (input.length <= 2000) {
+      setDescricao(input);
     }
   };
 
   const handleImagemUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, dots, hyphens, underscores, colons, slashes for URLs, max 500 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\.\-\_\/\:]/g, '');
-    if (validChars.length <= 500) {
-      setImagemUrl(validChars);
+    // Allow ALL characters for URLs, max 500 characters
+    if (input.length <= 500) {
+      setImagemUrl(input);
     }
   };
 
