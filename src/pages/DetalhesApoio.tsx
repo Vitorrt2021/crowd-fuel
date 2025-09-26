@@ -142,6 +142,16 @@ export default function DetalhesApoio() {
       return;
     }
 
+    // Check if campaign is already completed
+    if (apoio.valor_atual >= apoio.meta_valor) {
+      toast({
+        title: 'Campanha finalizada',
+        description: 'Esta campanha já atingiu sua meta e não pode receber mais apoios.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Validate name length
     if (nome.length < 3) {
       toast({
@@ -304,6 +314,7 @@ export default function DetalhesApoio() {
   const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
   const valorAtualReais = apoio.valor_atual / 100;
   const metaValorReais = apoio.meta_valor / 100;
+  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor;
 
   return (
     <div className="min-h-screen bg-background">
@@ -350,9 +361,16 @@ export default function DetalhesApoio() {
           {/* Progress Component */}
           <Card>
             <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
-                Progresso da campanha
+              <CardTitle className="flex items-center justify-between text-base sm:text-xl">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+                  Progresso da campanha
+                </div>
+                {campanhaFinalizada && (
+                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    META ATINGIDA
+                  </span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
@@ -378,13 +396,26 @@ export default function DetalhesApoio() {
                 </div>
               </div>
 
+              {/* Campaign completion message */}
+              {campanhaFinalizada && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-green-800 font-medium text-sm sm:text-base">
+                    🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!
+                  </p>
+                </div>
+              )}
+
               {/* Support Button - Usa Drawer em mobile, Dialog em desktop */}
               {isMobile ? (
                 <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DrawerTrigger asChild>
-                    <Button className="w-full" size="default">
+                    <Button
+                      className="w-full"
+                      size="default"
+                      disabled={campanhaFinalizada}
+                    >
                       <Heart className="h-4 w-4 mr-2" />
-                      Apoiar agora
+                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
                     </Button>
                   </DrawerTrigger>
                     
@@ -429,14 +460,19 @@ export default function DetalhesApoio() {
                           className="text-base"
                         />
                       </div>
-                        
-                      <Button 
+
+                      <Button
                         onClick={handleApoiar}
-                        disabled={paymentLoading || !valor || !nome || !email}
+                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
                         className="w-full"
                         size="lg"
                       >
-                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                        {campanhaFinalizada
+                          ? 'Campanha finalizada'
+                          : paymentLoading
+                            ? 'Processando...'
+                            : `Apoiar com R$ ${valor || '0,00'}`
+                        }
                       </Button>
                     </div>
                   </DrawerContent>
@@ -444,9 +480,13 @@ export default function DetalhesApoio() {
               ) : (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full" size="lg">
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      disabled={campanhaFinalizada}
+                    >
                       <Heart className="h-4 w-4 mr-2" />
-                      Apoiar agora
+                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
                     </Button>
                   </DialogTrigger>
                     
@@ -488,14 +528,19 @@ export default function DetalhesApoio() {
                           onChange={(e) => setEmail(e.target.value)}
                         />
                       </div>
-                        
-                      <Button 
+
+                      <Button
                         onClick={handleApoiar}
-                        disabled={paymentLoading || !valor || !nome || !email}
+                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
                         className="w-full"
                         size="lg"
                       >
-                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                        {campanhaFinalizada
+                          ? 'Campanha finalizada'
+                          : paymentLoading
+                            ? 'Processando...'
+                            : `Apoiar com R$ ${valor || '0,00'}`
+                        }
                       </Button>
                     </div>
                   </DialogContent>
