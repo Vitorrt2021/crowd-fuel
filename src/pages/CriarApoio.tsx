@@ -267,10 +267,10 @@ export default function CriarApoio() {
                 <Label htmlFor="descricao" className="text-sm sm:text-base">Descrição *</Label>
                 <Textarea
                   id="descricao"
-                  placeholder="Conte sua história, explique por que precisa de apoio e como os recursos serão utilizados..."
+                  placeholder="Conte sua história e explique por que precisa de apoio..."
                   value={descricao}
                   onChange={handleDescricaoChange}
-                  rows={isMobile ? 4 : 6}
+                  rows={isMobile ? 3 : 4}
                   maxLength={2000}
                   className="text-sm sm:text-base"
                 />
