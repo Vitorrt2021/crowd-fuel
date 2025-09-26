@@ -23,6 +23,7 @@ export default function CriarApoio() {
   const [descricao, setDescricao] = useState('');
   const [metaValor, setMetaValor] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
+  const [handleInfinitepay, setHandleInfinitepay] = useState('');
 
   // Utility functions for currency formatting
   const formatCurrency = (value: string): string => {
@@ -85,6 +86,15 @@ export default function CriarApoio() {
     }
   };
 
+  const handleInfinitepayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, underscores, hyphens, max 50 characters
+    const validChars = input.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (validChars.length <= 50) {
+      setHandleInfinitepay(validChars);
+    }
+  };
+
   const isValidImageUrl = (url: string): boolean => {
     try {
       const urlObj = new URL(url);
@@ -106,7 +116,7 @@ export default function CriarApoio() {
       return;
     }
 
-    if (!titulo || !descricao || !metaValor) {
+    if (!titulo || !descricao || !metaValor || !handleInfinitepay) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha todos os campos obrigatórios.',
@@ -130,6 +140,16 @@ export default function CriarApoio() {
       toast({
         title: 'Descrição obrigatória',
         description: 'A descrição deve ter pelo menos 1 caracter.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate handle length
+    if (handleInfinitepay.length < 3) {
+      toast({
+        title: 'Handle inválido',
+        description: 'O handle deve ter pelo menos 3 caracteres.',
         variant: 'destructive',
       });
       return;
@@ -165,14 +185,7 @@ export default function CriarApoio() {
       return;
     }
 
-    if (!user.handle) {
-      toast({
-        title: 'Handle não encontrado',
-        description: 'Seu handle do InfinitePay não foi encontrado. Verifique sua conta.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // Remove validation for user.handle since we're using custom handle input
 
     setLoading(true);
 
@@ -187,7 +200,7 @@ export default function CriarApoio() {
           meta_valor: metaValorCentavos,
           imagem_url: imagemUrl || null,
           user_id: user.id,
-          handle_infinitepay: user.handle.replace('@', ''), // Remove @ se existir
+          handle_infinitepay: handleInfinitepay, // Use custom handle input
         })
         .select()
         .single();
@@ -254,16 +267,15 @@ export default function CriarApoio() {
           Voltar
         </Button>
 
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-xl sm:text-2xl">Criar Novo Apoio</CardTitle>
-            <p className="text-sm sm:text-base text-muted-foreground">
+        <div className="space-y-4 sm:space-y-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold">Criar Novo Apoio</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
               Conte sua história e mobilize pessoas para apoiar sua causa
             </p>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Título */}
               <div>
                 <Label htmlFor="titulo" className="text-sm sm:text-base">Título do apoio *</Label>
@@ -285,10 +297,10 @@ export default function CriarApoio() {
                 <Label htmlFor="descricao" className="text-sm sm:text-base">Descrição *</Label>
                 <Textarea
                   id="descricao"
-                  placeholder="Conte sua história, explique por que precisa de apoio e como os recursos serão utilizados..."
+                  placeholder="Conte sua história e explique por que precisa de apoio..."
                   value={descricao}
                   onChange={handleDescricaoChange}
-                  rows={isMobile ? 4 : 6}
+                  rows={isMobile ? 3 : 4}
                   maxLength={2000}
                   className="text-sm sm:text-base"
                 />
@@ -301,7 +313,7 @@ export default function CriarApoio() {
               <div>
                 <Label htmlFor="metaValor" className="text-sm sm:text-base">Meta de arrecadação (R$) *</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">R$</span>
                   <Input
                     id="metaValor"
                     type="text"
@@ -335,17 +347,23 @@ export default function CriarApoio() {
                 </p>
               </div>
 
-              {/* Informação do Handle */}
+              {/* Handle InfinitePay */}
               <div>
-                <Label className="text-sm sm:text-base">Handle InfinitePay</Label>
-                <div className="bg-muted rounded-lg p-3 mt-1">
-                  <p className="text-sm sm:text-base font-medium">
-                    @{user?.handle}
-                  </p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Este handle receberá os pagamentos dos apoiadores
-                  </p>
+                <Label htmlFor="handleInfinitepay" className="text-sm sm:text-base">Handle InfinitePay *</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">$</span>
+                  <Input
+                    id="handleInfinitepay"
+                    placeholder="seu_handle"
+                    value={handleInfinitepay}
+                    onChange={handleInfinitepayChange}
+                    className="pl-8 text-sm sm:text-base"
+                    maxLength={50}
+                  />
                 </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Este handle receberá os pagamentos dos apoiadores
+                </p>
               </div>
 
               {/* Preview da imagem */}
@@ -382,7 +400,7 @@ export default function CriarApoio() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !titulo || !descricao || !metaValor}
+                  disabled={loading || !titulo || !descricao || !metaValor || !handleInfinitepay}
                   className="flex-1 order-1 sm:order-2"
                   size={isMobile ? "default" : "default"}
                 >
@@ -390,8 +408,7 @@ export default function CriarApoio() {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );
