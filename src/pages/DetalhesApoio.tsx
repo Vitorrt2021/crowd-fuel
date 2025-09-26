@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { Share2, Heart, ArrowLeft, Calendar, User } from 'lucide-react';
+import { Share2, Heart, ArrowLeft, Calendar, User, Info, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutPayment } from '@/hooks/useInfinitepay';
 import { useIsMobile, useDeviceInfo } from '@/hooks/use-mobile';
@@ -17,6 +18,7 @@ interface Apoio {
   id: string;
   titulo: string;
   descricao: string;
+  beneficios?: string;
   meta_valor: number;
   valor_atual: number;
   imagem_url?: string;
@@ -340,31 +342,30 @@ export default function DetalhesApoio() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Navigation */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-4 sm:mb-6"
-          size={isMobile ? "sm" : "default"}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
-          Voltar
-        </Button>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            size={isMobile ? "sm" : "default"}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+            Voltar
+          </Button>
+          
+          <Button
+            variant="outline"
+            size={isMobile ? "sm" : "sm"}
+            onClick={compartilhar}
+          >
+            {isMobile ? "Compartilhar" : "Compartilhar"}
+            <Share2 className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
 
         {/* Main Content */}
         <div className="space-y-4 sm:space-y-6">
-          {/* Title and Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-            <h1 className="text-xl sm:text-3xl font-bold flex-1">{apoio.titulo}</h1>
-            <Button
-              variant="outline"
-              size={isMobile ? "sm" : "sm"}
-              onClick={compartilhar}
-              className="w-full sm:w-auto"
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              {isMobile ? "Compartilhar" : "Compartilhar"}
-            </Button>
-          </div>
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl font-bold">{apoio.titulo}</h1>
 
           {/* Image */}
           {apoio.imagem_url && (
@@ -577,61 +578,91 @@ export default function DetalhesApoio() {
             {/* Left Column - Details */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
 
-              {/* Description */}
-              <Card>
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-base sm:text-xl">Sobre este apoio</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                  <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
-                  <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
-                      {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Supporters */}
-              <Card>
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-base sm:text-xl">Apoiadores ({apoiadores.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                  {apoiadores.length > 0 ? (
-                    <div className="space-y-3 sm:space-y-4">
-                      {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
-                        <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                              <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
-                                {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium text-primary text-sm sm:text-base">
-                              R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                            </p>
+              {/* Description, Benefits and Supporters Tabs */}
+              <Card className="mb-4 sm:mb-6">
+                <CardContent className="p-0">
+                  <Tabs defaultValue="sobre" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 h-12">
+                      <TabsTrigger value="sobre" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                        <Info className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Sobre</span>
+                        <span className="sm:hidden">Sobre</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="beneficios" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                        <Gift className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Benefícios</span>
+                        <span className="sm:hidden">Benefícios</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="apoiadores" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Apoiadores</span>
+                        <span className="sm:hidden">Apoiadores</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="min-h-[200px]">
+                      <TabsContent value="sobre" className="p-4 sm:p-6 m-0">
+                        <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
+                        <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
+                            {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
                           </div>
                         </div>
-                      ))}
-                      {isMobile && apoiadores.length > 5 && (
-                        <p className="text-center text-xs text-muted-foreground pt-2">
-                          E mais {apoiadores.length - 5} apoiadores...
-                        </p>
-                      )}
+                      </TabsContent>
+                      
+                      <TabsContent value="beneficios" className="p-4 sm:p-6 m-0">
+                        {apoio.beneficios ? (
+                          <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.beneficios}</p>
+                        ) : (
+                          <p className="text-muted-foreground text-sm sm:text-base text-center py-8">
+                            Os benefícios deste apoio serão informados em breve.
+                          </p>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="apoiadores" className="p-4 sm:p-6 m-0">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-base sm:text-lg font-semibold">Apoiadores</h3>
+                          <span className="text-sm text-muted-foreground">({apoiadores.length})</span>
+                        </div>
+                        
+                        {apoiadores.length > 0 ? (
+                          <div className="space-y-3 sm:space-y-4">
+                            {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
+                              <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
+                                    <p className="text-xs sm:text-sm text-muted-foreground">
+                                      {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-primary text-sm sm:text-base">
+                                    R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            {isMobile && apoiadores.length > 5 && (
+                              <p className="text-center text-xs text-muted-foreground pt-2">
+                                E mais {apoiadores.length - 5} apoiadores...
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
+                            Seja o primeiro a apoiar esta causa!
+                          </p>
+                        )}
+                      </TabsContent>
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
-                      Seja o primeiro a apoiar esta causa!
-                    </p>
-                  )}
+                  </Tabs>
                 </CardContent>
               </Card>
             </div>
