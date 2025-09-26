@@ -249,16 +249,15 @@ export default function CriarApoio() {
           Voltar
         </Button>
 
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-xl sm:text-2xl">Criar Novo Apoio</CardTitle>
-            <p className="text-sm sm:text-base text-muted-foreground">
+        <div className="space-y-4 sm:space-y-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold">Criar Novo Apoio</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
               Conte sua história e mobilize pessoas para apoiar sua causa
             </p>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Título */}
               <div>
                 <Label htmlFor="titulo" className="text-sm sm:text-base">Título do apoio *</Label>
@@ -391,8 +390,7 @@ export default function CriarApoio() {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );
