@@ -12,7 +12,7 @@ export default function ApoioSucesso() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'ApoiaColetivo',
+          title: 'ApoiaAI',
           text: 'Acabei de apoiar uma causa importante! Venha conhecer outros apoios incríveis.',
           url: window.location.origin,
         });
