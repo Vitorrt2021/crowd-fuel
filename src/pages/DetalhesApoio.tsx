@@ -403,7 +403,7 @@ export default function DetalhesApoio() {
           {/* Desktop Layout - Image and Progress Side by Side */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-6">
             {/* Image - Desktop */}
-            <div className="overflow-hidden rounded-lg min-h-[300px]">
+            <div className="overflow-hidden rounded-lg">
               <img
                 src={apoio.imagem_url || "/placeholder.svg"}
                 alt={apoio.titulo}
@@ -413,7 +413,7 @@ export default function DetalhesApoio() {
             </div>
 
             {/* Progress Component - Desktop */}
-            <Card className="flex flex-col min-h-[300px]">
+            <Card className="flex flex-col">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center justify-between text-base sm:text-xl">
                   <div className="flex items-center gap-2">
@@ -427,9 +427,9 @@ export default function DetalhesApoio() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0 flex-1 flex flex-col">
+              <CardContent className="space-y-4 p-4 sm:p-6 pt-0 flex-1 flex flex-col">
                 {/* Progress */}
-                <div className="space-y-2 sm:space-y-3">
+                <div className="space-y-2">
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="font-medium">
                       R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
