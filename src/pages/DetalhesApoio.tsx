@@ -90,8 +90,8 @@ export default function DetalhesApoio() {
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Only allow letters, numbers, @ and spaces, max 20 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\s]/g, '');
+    // Allow letters, numbers, spaces and common punctuation, max 20 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
     if (validChars.length <= 20) {
       setNome(validChars);
     }
