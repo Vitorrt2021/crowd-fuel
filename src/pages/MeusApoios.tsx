@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Plus, Edit, Eye, Users } from 'lucide-react';
 import { useInfinitepayUser } from '@/hooks/useInfinitepay';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Apoio {
   id: string;
@@ -26,6 +27,7 @@ interface ApoiadorCount {
 export default function MeusApoios() {
   const navigate = useNavigate();
   const { user, loading: userLoading } = useInfinitepayUser();
+  const isMobile = useIsMobile();
   
   const [apoios, setApoios] = useState<Apoio[]>([]);
   const [apoiadoresCount, setApoiadoresCount] = useState<Record<string, number>>({});
@@ -129,41 +131,46 @@ export default function MeusApoios() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
+              size={isMobile ? "icon" : "default"}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
+              <ArrowLeft className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Meus Apoios</h1>
-              <p className="text-muted-foreground">Gerencie todos os seus apoios criados</p>
+              <h1 className="text-xl sm:text-3xl font-bold">Meus Apoios</h1>
+              <p className="text-xs sm:text-base text-muted-foreground">Gerencie todos os seus apoios criados</p>
             </div>
           </div>
           
-          <Button onClick={() => navigate('/criar-apoio')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Apoio
+          <Button 
+            onClick={() => navigate('/criar-apoio')}
+            size={isMobile ? "sm" : "default"}
+            className="self-end sm:self-auto"
+          >
+            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+            {isMobile ? "Novo" : "Novo Apoio"}
           </Button>
         </div>
 
         {/* Content */}
         {loading ? (
-          <div className="space-y-6">
-            {[...Array(3)].map((_, i) => (
+          <div className="space-y-4 sm:space-y-6">
+            {[...Array(isMobile ? 2 : 3)].map((_, i) => (
               <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="flex gap-4">
-                    <div className="w-24 h-24 bg-muted rounded-lg"></div>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex gap-3 sm:gap-4">
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-muted rounded-lg"></div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-6 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
-                      <div className="h-4 bg-muted rounded w-1/4"></div>
+                      <div className="h-5 sm:h-6 bg-muted rounded w-3/4"></div>
+                      <div className="h-3 sm:h-4 bg-muted rounded w-1/2"></div>
+                      <div className="h-3 sm:h-4 bg-muted rounded w-1/4"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -171,7 +178,7 @@ export default function MeusApoios() {
             ))}
           </div>
         ) : apoios.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {apoios.map((apoio) => {
               const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
               const valorAtualReais = apoio.valor_atual / 100;
@@ -180,68 +187,69 @@ export default function MeusApoios() {
 
               return (
                 <Card key={apoio.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex gap-6">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                       {/* Imagem */}
-                      <div className="w-24 h-24 flex-shrink-0">
+                      <div className="w-full sm:w-24 h-32 sm:h-24 flex-shrink-0">
                         {apoio.imagem_url ? (
                           <img
                             src={apoio.imagem_url}
                             alt={apoio.titulo}
                             className="w-full h-full object-cover rounded-lg"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                            <Users className="h-8 w-8 text-muted-foreground" />
+                            <Users className="h-6 sm:h-8 w-6 sm:w-8 text-muted-foreground" />
                           </div>
                         )}
                       </div>
 
                       {/* Conteúdo */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-semibold truncate">{apoio.titulo}</h3>
-                            <p className="text-muted-foreground text-sm line-clamp-2 mt-1">
+                        <div className="flex items-start justify-between mb-2 sm:mb-3">
+                          <div className="flex-1 min-w-0 mr-2">
+                            <h3 className="text-base sm:text-xl font-semibold line-clamp-1 sm:truncate">{apoio.titulo}</h3>
+                            <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2 mt-1">
                               {apoio.descricao}
                             </p>
                           </div>
-                          <Badge className={getStatusColor(apoio.status)}>
+                          <Badge className={`${getStatusColor(apoio.status)} text-xs`}>
                             {getStatusText(apoio.status)}
                           </Badge>
                         </div>
 
                         {/* Métricas */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
                           <div>
-                            <p className="text-sm text-muted-foreground">Arrecadado</p>
-                            <p className="font-semibold text-primary">
-                              R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <p className="text-xs sm:text-sm text-muted-foreground">Arrecadado</p>
+                            <p className="font-semibold text-primary text-sm sm:text-base">
+                              R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Meta</p>
-                            <p className="font-semibold">
-                              R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <p className="text-xs sm:text-sm text-muted-foreground">Meta</p>
+                            <p className="font-semibold text-sm sm:text-base">
+                              R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Apoiadores</p>
-                            <p className="font-semibold">{apoiadoresTotal}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">Apoiadores</p>
+                            <p className="font-semibold text-sm sm:text-base">{apoiadoresTotal}</p>
                           </div>
                         </div>
 
                         {/* Progresso */}
-                        <div className="mb-4">
-                          <div className="flex justify-between text-sm mb-1">
+                        <div className="mb-3 sm:mb-4">
+                          <div className="flex justify-between text-xs sm:text-sm mb-1">
                             <span>{progresso.toFixed(1)}% da meta</span>
                             <span className="text-muted-foreground">
-                              {new Date(apoio.created_at).toLocaleDateString('pt-BR')}
+                              {new Date(apoio.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
                             </span>
                           </div>
-                          <div className="w-full bg-secondary rounded-full h-2">
+                          <div className="w-full bg-secondary rounded-full h-1.5 sm:h-2">
                             <div
-                              className="bg-primary h-2 rounded-full transition-all"
+                              className="bg-primary h-1.5 sm:h-2 rounded-full transition-all"
                               style={{ width: `${Math.min(progresso, 100)}%` }}
                             ></div>
                           </div>
@@ -253,16 +261,18 @@ export default function MeusApoios() {
                             variant="outline"
                             size="sm"
                             onClick={() => navigate(`/apoio/${apoio.id}`)}
+                            className="flex-1 sm:flex-initial"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
+                            <Eye className="h-4 w-4 mr-1 sm:mr-2" />
                             Ver
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => navigate(`/editar-apoio/${apoio.id}`)}
+                            className="flex-1 sm:flex-initial"
                           >
-                            <Edit className="h-4 w-4 mr-2" />
+                            <Edit className="h-4 w-4 mr-1 sm:mr-2" />
                             Editar
                           </Button>
                         </div>
@@ -275,13 +285,13 @@ export default function MeusApoios() {
           </div>
         ) : (
           <Card>
-            <CardContent className="text-center py-16">
-              <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Nenhum apoio criado</h3>
-              <p className="text-muted-foreground mb-6">
+            <CardContent className="text-center py-8 sm:py-16">
+              <Users className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Nenhum apoio criado</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
                 Você ainda não criou nenhum apoio. Que tal começar agora?
               </p>
-              <Button onClick={() => navigate('/criar-apoio')}>
+              <Button onClick={() => navigate('/criar-apoio')} size={isMobile ? "default" : "default"}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeiro Apoio
               </Button>

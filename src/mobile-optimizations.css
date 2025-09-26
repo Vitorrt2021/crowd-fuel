@@ -1,0 +1,176 @@
+/* Mobile and WebView Optimizations */
+
+/* Safe area for notch devices (iPhone X and newer) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prevent iOS bounce effect */
+html {
+  position: fixed;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Optimize for mobile touch */
+@media (max-width: 768px) {
+  /* Increase touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better tap feedback */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Prevent text selection on interactive elements */
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Fix for iOS input zoom */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Optimize card animations for mobile */
+  .card-hover {
+    transition: transform 0.2s ease-out !important;
+  }
+
+  /* Reduce animation complexity on mobile */
+  .animate-pulse {
+    animation-duration: 1.5s;
+  }
+
+  /* Better scrollbar on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 4px;
+  }
+}
+
+/* WebView specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS WebView */
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Disable iOS callout on long press */
+  * {
+    -webkit-touch-callout: none;
+  }
+
+  /* Better momentum scrolling */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Android WebView optimizations */
+@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
+  /* Optimize touch events */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent double-tap zoom */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Reduce header height in landscape */
+  header {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* Adjust hero section */
+  .hero-section {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* Small device optimizations */
+@media (max-width: 375px) {
+  /* Even smaller text adjustments */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+
+  h2 {
+    font-size: 1.125rem !important;
+  }
+
+  h3 {
+    font-size: 1rem !important;
+  }
+
+  /* Adjust spacing */
+  .container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode optimizations for OLED screens */
+@media (prefers-color-scheme: dark) {
+  @supports (background: -webkit-named-image(apple-pay-logo-black)) {
+    /* True black for OLED */
+    .dark {
+      --background: 0 0% 0%;
+    }
+  }
+}

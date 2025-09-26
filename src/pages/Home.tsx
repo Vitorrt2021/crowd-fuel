@@ -3,8 +3,16 @@ import { Button } from '@/components/ui/button';
 import { ApoioCard } from '@/components/ApoioCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Heart } from 'lucide-react';
+import { Plus, Heart, Menu } from 'lucide-react';
 import { useInfinitepayUser } from '@/hooks/useInfinitepay';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 interface Apoio {
   id: string;
@@ -21,6 +29,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useInfinitepayUser();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchApoios = async () => {
@@ -47,84 +56,117 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Heart className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">ApoiaColetivo</h1>
+              <Heart className="h-6 sm:h-8 w-6 sm:w-8 text-primary" />
+              <h1 className="text-lg sm:text-2xl font-bold">ApoiaColetivo</h1>
             </div>
             
-            <div className="flex items-center gap-4">
-              {user && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/meus-apoios')}
-                >
-                  Meus Apoios
+            {isMobile ? (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[250px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <Button 
+                      onClick={() => navigate('/criar-apoio')}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Apoio
+                    </Button>
+                    {user && (
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate('/meus-apoios')}
+                        className="w-full"
+                      >
+                        Meus Apoios
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            ) : (
+              <div className="flex items-center gap-4">
+                {user && (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/meus-apoios')}
+                  >
+                    Meus Apoios
+                  </Button>
+                )}
+                <Button onClick={() => navigate('/criar-apoio')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Apoio
                 </Button>
-              )}
-              <Button onClick={() => navigate('/criar-apoio')}>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Apoio
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+      <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-8 sm:py-16">
+        <div className="container mx-auto px-3 sm:px-4 text-center">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Transforme sonhos em realidade
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
             Una-se a milhares de pessoas que apoiam causas importantes e fazem a diferença na vida de outros
           </p>
           <Button 
-            size="lg" 
+            size={isMobile ? "default" : "lg"}
             onClick={() => navigate('/criar-apoio')}
-            className="text-lg px-8 py-6"
+            className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
             Começar um Apoio
           </Button>
         </div>
       </section>
 
       {/* Apoios em Destaque */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-3xl font-bold">Apoios em Destaque</h3>
+      <section className="py-8 sm:py-16">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-3xl font-bold">Apoios em Destaque</h3>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-card rounded-lg p-6 animate-pulse">
-                  <div className="aspect-video bg-muted rounded-lg mb-4"></div>
-                  <div className="h-6 bg-muted rounded mb-2"></div>
-                  <div className="h-4 bg-muted rounded mb-4"></div>
-                  <div className="h-3 bg-muted rounded mb-2"></div>
-                  <div className="h-10 bg-muted rounded"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {[...Array(isMobile ? 3 : 6)].map((_, i) => (
+                <div key={i} className="bg-card rounded-lg p-4 sm:p-6 animate-pulse">
+                  <div className="aspect-video bg-muted rounded-lg mb-3 sm:mb-4"></div>
+                  <div className="h-5 sm:h-6 bg-muted rounded mb-2"></div>
+                  <div className="h-3 sm:h-4 bg-muted rounded mb-3 sm:mb-4"></div>
+                  <div className="h-2 sm:h-3 bg-muted rounded mb-2"></div>
+                  <div className="h-9 sm:h-10 bg-muted rounded"></div>
                 </div>
               ))}
             </div>
           ) : apoios.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {apoios.map((apoio) => (
                 <ApoioCard key={apoio.id} apoio={apoio} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h4 className="text-xl font-semibold mb-2">Nenhum apoio encontrado</h4>
-              <p className="text-muted-foreground mb-6">
+            <div className="text-center py-8 sm:py-16">
+              <Heart className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <h4 className="text-lg sm:text-xl font-semibold mb-2">Nenhum apoio encontrado</h4>
+              <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
                 Seja o primeiro a criar um apoio coletivo!
               </p>
-              <Button onClick={() => navigate('/criar-apoio')}>
+              <Button onClick={() => navigate('/criar-apoio')} size={isMobile ? "default" : "default"}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeiro Apoio
               </Button>

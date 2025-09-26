@@ -9,11 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Upload, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useInfinitepayUser } from '@/hooks/useInfinitepay';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function CriarApoio() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: userLoading } = useInfinitepayUser();
+  const isMobile = useIsMobile();
   
   const [loading, setLoading] = useState(false);
   const [titulo, setTitulo] = useState('');
@@ -94,61 +96,64 @@ export default function CriarApoio() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-2xl">
         {/* Navigation */}
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-6"
+          className="mb-4 sm:mb-6"
+          size={isMobile ? "sm" : "default"}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
           Voltar
         </Button>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Criar Novo Apoio</CardTitle>
-            <p className="text-muted-foreground">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-xl sm:text-2xl">Criar Novo Apoio</CardTitle>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Conte sua história e mobilize pessoas para apoiar sua causa
             </p>
           </CardHeader>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Título */}
               <div>
-                <Label htmlFor="titulo">Título do apoio *</Label>
+                <Label htmlFor="titulo" className="text-sm sm:text-base">Título do apoio *</Label>
                 <Input
                   id="titulo"
                   placeholder="Dê um título marcante para seu apoio"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   maxLength={100}
+                  className="text-sm sm:text-base"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {titulo.length}/100 caracteres
                 </p>
               </div>
 
               {/* Descrição */}
               <div>
-                <Label htmlFor="descricao">Descrição *</Label>
+                <Label htmlFor="descricao" className="text-sm sm:text-base">Descrição *</Label>
                 <Textarea
                   id="descricao"
                   placeholder="Conte sua história, explique por que precisa de apoio e como os recursos serão utilizados..."
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
-                  rows={6}
+                  rows={isMobile ? 4 : 6}
                   maxLength={2000}
+                  className="text-sm sm:text-base"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {descricao.length}/2000 caracteres
                 </p>
               </div>
 
               {/* Meta de valor */}
               <div>
-                <Label htmlFor="metaValor">Meta de arrecadação (R$) *</Label>
+                <Label htmlFor="metaValor" className="text-sm sm:text-base">Meta de arrecadação (R$) *</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -159,17 +164,17 @@ export default function CriarApoio() {
                     placeholder="0,00"
                     value={metaValor}
                     onChange={(e) => setMetaValor(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                   />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Defina uma meta realista para seu apoio
                 </p>
               </div>
 
               {/* URL da imagem */}
               <div>
-                <Label htmlFor="imagemUrl">URL da imagem (opcional)</Label>
+                <Label htmlFor="imagemUrl" className="text-sm sm:text-base">URL da imagem (opcional)</Label>
                 <div className="relative">
                   <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -178,17 +183,17 @@ export default function CriarApoio() {
                     placeholder="https://exemplo.com/sua-imagem.jpg"
                     value={imagemUrl}
                     onChange={(e) => setImagemUrl(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm sm:text-base"
                   />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Uma imagem ajuda a conectar com os apoiadores
                 </p>
               </div>
 
               {/* Handle InfinitePay */}
               <div>
-                <Label htmlFor="handleInfinitepay">Handle InfinitePay *</Label>
+                <Label htmlFor="handleInfinitepay" className="text-sm sm:text-base">Handle InfinitePay *</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                     @
@@ -198,10 +203,10 @@ export default function CriarApoio() {
                     placeholder="seu-handle"
                     value={handleInfinitepay}
                     onChange={(e) => setHandleInfinitepay(e.target.value)}
-                    className="pl-8"
+                    className="pl-8 text-sm sm:text-base"
                   />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Handle que receberá os pagamentos dos apoiadores
                 </p>
               </div>
@@ -228,19 +233,21 @@ export default function CriarApoio() {
               )}
 
               {/* Botões */}
-              <div className="flex gap-4 pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate('/')}
-                  className="flex-1"
+                  className="flex-1 order-2 sm:order-1"
+                  size={isMobile ? "default" : "default"}
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading || !titulo || !descricao || !metaValor || !handleInfinitepay}
-                  className="flex-1"
+                  className="flex-1 order-1 sm:order-2"
+                  size={isMobile ? "default" : "default"}
                 >
                   {loading ? 'Criando...' : 'Criar Apoio'}
                 </Button>
