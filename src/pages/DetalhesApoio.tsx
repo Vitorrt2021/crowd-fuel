@@ -55,7 +55,7 @@ export default function DetalhesApoio() {
   // Utility functions for currency formatting
   const formatCurrency = (value: string): string => {
     // Remove all non-numeric characters
-    let numericValue = value.replace(/[^\d]/g, '');
+    const numericValue = value.replace(/[^\d]/g, '');
 
     // Don't allow empty or just zeros
     if (!numericValue || numericValue === '0' || numericValue === '00') {
@@ -208,12 +208,21 @@ export default function DetalhesApoio() {
     
     try {
       // Create checkout via edge function
+      const orderNsu = `APOIO_${Date.now()}_${apoio.id}`;
+      const redirectUrl = new URL(`${window.location.origin}/apoio-sucesso`);
+
+      // Add verification parameters to redirect URL
+      redirectUrl.searchParams.set('apoio_id', apoio.id);
+      redirectUrl.searchParams.set('nome', nome);
+      redirectUrl.searchParams.set('email', email);
+      redirectUrl.searchParams.set('valor', valorCentavos.toString());
+
       const response = await fetch('https://tuiwratkqezsiweocbpu.supabase.co/functions/v1/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           handle: apoio.handle_infinitepay,
-          order_nsu: `APOIO_${Date.now()}`,
+          order_nsu: orderNsu,
           items: [{
             quantity: 1,
             price: valorCentavos,
@@ -223,7 +232,7 @@ export default function DetalhesApoio() {
             name: nome,
             email: email
           },
-          redirect_url: `${window.location.origin}/apoio-sucesso`
+          redirect_url: redirectUrl.toString()
         })
       });
 
@@ -249,16 +258,25 @@ export default function DetalhesApoio() {
           const paymentResult = await executePayment(url);
 
           if (paymentResult) {
-            // Save supporter data
-            await supabase
+            // Check if transaction already exists to prevent duplicates
+            const { data: existingTransaction } = await supabase
               .from('apoiadores')
-              .insert({
-                apoio_id: apoio.id,
-                nome,
-                email,
-                valor: valorCentavos,
-                transaction_nsu: paymentResult.transactionNsu
-              });
+              .select('id')
+              .eq('transaction_nsu', paymentResult.transactionNsu)
+              .maybeSingle();
+
+            if (!existingTransaction) {
+              // Save supporter data only if transaction doesn't exist
+              await supabase
+                .from('apoiadores')
+                .insert({
+                  apoio_id: apoio.id,
+                  nome,
+                  email,
+                  valor: valorCentavos,
+                  transaction_nsu: paymentResult.transactionNsu
+                });
+            }
 
             toast({
               title: 'Apoio realizado!',
