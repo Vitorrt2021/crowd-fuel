@@ -229,29 +229,49 @@ export default function DetalhesApoio() {
 
       const result = await response.json();
       const { url } = result;
-      
-      // Process payment with InfinitePay
-      const paymentResult = await executePayment(url);
-      
-      if (paymentResult) {
-        // Save supporter data
-        await supabase
-          .from('apoiadores')
-          .insert({
-            apoio_id: apoio.id,
-            nome,
-            email,
-            valor: valorCentavos,
-            transaction_nsu: paymentResult.transactionNsu
-          });
 
-        toast({
-          title: 'Apoio realizado!',
-          description: 'Obrigado por apoiar esta causa.',
-        });
+      // Check if InfinitePay is available before trying to process payment
+      const isInfinitepayAvailable = typeof window !== 'undefined' && window.Infinitepay;
 
-        navigate('/apoio-sucesso');
+      if (isInfinitepayAvailable) {
+        try {
+          const paymentResult = await executePayment(url);
+
+          if (paymentResult) {
+            // Save supporter data
+            await supabase
+              .from('apoiadores')
+              .insert({
+                apoio_id: apoio.id,
+                nome,
+                email,
+                valor: valorCentavos,
+                transaction_nsu: paymentResult.transactionNsu
+              });
+
+            toast({
+              title: 'Apoio realizado!',
+              description: 'Obrigado por apoiar esta causa.',
+            });
+
+            navigate('/apoio-sucesso');
+            return; // Exit the function after successful payment
+          }
+        } catch (paymentError) {
+          console.log('InfinitePay payment failed, falling back to checkout URL:', paymentError);
+        }
       }
+
+      // Fallback: redirect to checkout URL if InfinitePay is not available or payment failed
+      console.log('Using checkout URL fallback');
+
+      toast({
+        title: 'Redirecionando para pagamento',
+        description: 'Você será redirecionado para completar o pagamento.',
+      });
+
+      // Open checkout URL in new tab/window
+      window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Erro ao processar apoio:', error);
       toast({
