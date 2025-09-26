@@ -296,7 +296,7 @@ export default function CriarApoio() {
               <div>
                 <Label htmlFor="metaValor" className="text-sm sm:text-base">Meta de arrecadação (R$) *</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">R$</span>
                   <Input
                     id="metaValor"
                     type="text"
