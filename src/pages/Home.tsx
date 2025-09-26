@@ -57,7 +57,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-4">
+        <div className="container mx-auto px-6 sm:px-4 py-2 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img 
@@ -128,7 +128,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-8 sm:py-16">
-        <div className="container mx-auto px-3 sm:px-4 text-center">
+        <div className="container mx-auto px-6 sm:px-4 text-center">
           <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Transforme sonhos em realidade
           </h2>
@@ -150,7 +150,7 @@ export default function Home() {
 
       {/* Apoios em Destaque */}
       <section className="py-8 sm:py-16">
-        <div className="container mx-auto px-3 sm:px-4">
+        <div className="container mx-auto px-6 sm:px-4">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h3 className="text-xl sm:text-3xl font-bold">Apoios em Destaque</h3>
           </div>

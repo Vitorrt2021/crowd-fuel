@@ -131,7 +131,7 @@ export default function MeusApoios() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
+      <div className="container mx-auto px-6 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-4">
@@ -191,18 +191,12 @@ export default function MeusApoios() {
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                       {/* Imagem */}
                       <div className="w-full sm:w-24 h-32 sm:h-24 flex-shrink-0">
-                        {apoio.imagem_url ? (
-                          <img
-                            src={apoio.imagem_url}
-                            alt={apoio.titulo}
-                            className="w-full h-full object-cover rounded-lg"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                            <Users className="h-6 sm:h-8 w-6 sm:w-8 text-muted-foreground" />
-                          </div>
-                        )}
+                        <img
+                          src={apoio.imagem_url || "/placeholder.svg"}
+                          alt={apoio.titulo}
+                          className="w-full h-full object-cover rounded-lg"
+                          loading="lazy"
+                        />
                       </div>
 
                       {/* Conteúdo */}

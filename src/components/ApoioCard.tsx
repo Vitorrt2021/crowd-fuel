@@ -31,16 +31,14 @@ export function ApoioCard({ apoio }: ApoioCardProps) {
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           onClick={() => navigate(`/apoio/${apoio.id}`)}>
       <CardHeader className="p-0">
-        {apoio.imagem_url && (
-          <div className="aspect-video overflow-hidden rounded-t-lg">
-            <img
-              src={apoio.imagem_url}
-              alt={apoio.titulo}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
-          </div>
-        )}
+        <div className="aspect-video overflow-hidden rounded-t-lg">
+          <img
+            src={apoio.imagem_url || "/placeholder.svg"}
+            alt={apoio.titulo}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        </div>
       </CardHeader>
       
       <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">

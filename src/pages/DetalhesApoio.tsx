@@ -24,6 +24,7 @@ interface Apoio {
   imagem_url?: string;
   handle_infinitepay: string;
   created_at: string;
+  status?: string;
 }
 
 interface Apoiador {
@@ -316,7 +317,8 @@ export default function DetalhesApoio() {
   };
 
   const compartilhar = async () => {
-    if (navigator.share) {
+    // Em mobile, tenta compartilhar nativamente
+    if (isMobile && navigator.share) {
       try {
         await navigator.share({
           title: apoio?.titulo,
@@ -325,8 +327,15 @@ export default function DetalhesApoio() {
         });
       } catch (error) {
         console.log('Compartilhamento cancelado');
+        // Se falhar no mobile, copia para clipboard como fallback
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'Link copiado!',
+          description: 'O link foi copiado para a área de transferência.',
+        });
       }
     } else {
+      // Em desktop, sempre copia para área de transferência
       navigator.clipboard.writeText(window.location.href);
       toast({
         title: 'Link copiado!',
@@ -371,7 +380,7 @@ export default function DetalhesApoio() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
+      <div className="container mx-auto px-6 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
@@ -398,22 +407,32 @@ export default function DetalhesApoio() {
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl font-bold">{apoio.titulo}</h1>
 
+          {/* Campaign completion message - Desktop */}
+          {campanhaFinalizada && (
+            <div className="hidden lg:block bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <p className="text-green-800 font-medium text-base">
+                {apoio.status === 'concluido'
+                  ? '🏁 Esta campanha foi finalizada pelo criador.'
+                  : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                }
+              </p>
+            </div>
+          )}
+
           {/* Desktop Layout - Image and Progress Side by Side */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-6">
             {/* Image - Desktop */}
-            {apoio.imagem_url && (
-              <div className="aspect-[4/3] overflow-hidden rounded-lg">
-                <img
-                  src={apoio.imagem_url}
-                  alt={apoio.titulo}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+            <div className="overflow-hidden rounded-lg min-h-[300px]">
+              <img
+                src={apoio.imagem_url || "/placeholder.svg"}
+                alt={apoio.titulo}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
 
             {/* Progress Component - Desktop */}
-            <Card>
+            <Card className="flex flex-col min-h-[300px]">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center justify-between text-base sm:text-xl">
                   <div className="flex items-center gap-2">
@@ -427,7 +446,7 @@ export default function DetalhesApoio() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
+              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0 flex-1 flex flex-col">
                 {/* Progress */}
                 <div className="space-y-2 sm:space-y-3">
                   <div className="flex justify-between text-xs sm:text-sm">
@@ -450,30 +469,19 @@ export default function DetalhesApoio() {
                   </div>
                 </div>
 
-                {/* Campaign completion message */}
-                {campanhaFinalizada && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-green-800 font-medium text-sm sm:text-base">
-                      {apoio.status === 'concluido'
-                        ? '🏁 Esta campanha foi finalizada pelo criador.'
-                        : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
-                      }
-                    </p>
-                  </div>
-                )}
-
                 {/* Support Button - Desktop */}
-                <Dialog open={desktopDialogOpen} onOpenChange={setDesktopDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      disabled={campanhaFinalizada}
-                    >
-                      <Heart className="h-4 w-4 mr-2" />
-                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
-                    </Button>
-                  </DialogTrigger>
+                <div className="mt-auto">
+                  <Dialog open={desktopDialogOpen} onOpenChange={setDesktopDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        disabled={campanhaFinalizada}
+                      >
+                        <Heart className="h-4 w-4 mr-2" />
+                        {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
+                      </Button>
+                    </DialogTrigger>
                     
                   <DialogContent>
                     <DialogHeader>
@@ -530,6 +538,7 @@ export default function DetalhesApoio() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -537,16 +546,14 @@ export default function DetalhesApoio() {
           {/* Mobile Layout - Image and Progress Stacked */}
           <div className="lg:hidden space-y-4 sm:space-y-6">
             {/* Image - Mobile */}
-            {apoio.imagem_url && (
-              <div className="aspect-video overflow-hidden rounded-lg">
-                <img
-                  src={apoio.imagem_url}
-                  alt={apoio.titulo}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+            <div className="aspect-video overflow-hidden rounded-lg">
+              <img
+                src={apoio.imagem_url || "/placeholder.svg"}
+                alt={apoio.titulo}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
 
             {/* Progress Component - Mobile */}
             <Card>

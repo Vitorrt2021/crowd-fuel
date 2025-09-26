@@ -6,7 +6,7 @@ import { CheckCircle, Heart, Home, Share2, AlertCircle, Loader2 } from 'lucide-r
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { parsePaymentParams, verifyPayment } from '@/lib/payment-verification';
+import { verifyPayment } from '@/lib/payment-verification';
 
 export default function ApoioSucesso() {
   const navigate = useNavigate();
@@ -119,7 +119,8 @@ export default function ApoioSucesso() {
   }, [searchParams, toast]);
 
   const compartilhar = async () => {
-    if (navigator.share) {
+    // Em mobile, tenta compartilhar nativamente
+    if (isMobile && navigator.share) {
       try {
         await navigator.share({
           title: 'ApoiaAI',
@@ -128,9 +129,20 @@ export default function ApoioSucesso() {
         });
       } catch (error) {
         console.log('Compartilhamento cancelado');
+        // Se falhar no mobile, copia para clipboard como fallback
+        navigator.clipboard.writeText(window.location.origin);
+        toast({
+          title: 'Link copiado!',
+          description: 'O link foi copiado para a área de transferência.',
+        });
       }
     } else {
+      // Em desktop, sempre copia para área de transferência
       navigator.clipboard.writeText(window.location.origin);
+      toast({
+        title: 'Link copiado!',
+        description: 'O link foi copiado para a área de transferência.',
+      });
     }
   };
 
