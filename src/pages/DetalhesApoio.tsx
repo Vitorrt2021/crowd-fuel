@@ -51,6 +51,52 @@ export default function DetalhesApoio() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
 
+  // Utility functions for currency formatting
+  const formatCurrency = (value: string): string => {
+    // Remove all non-numeric characters
+    let numericValue = value.replace(/[^\d]/g, '');
+
+    // Don't allow empty or just zeros
+    if (!numericValue || numericValue === '0' || numericValue === '00') {
+      return '';
+    }
+
+    // Convert to cents first, then format
+    const cents = parseInt(numericValue);
+    const reais = Math.floor(cents / 100);
+    const centavos = cents % 100;
+
+    // Always show format X,XX
+    return `${reais},${centavos.toString().padStart(2, '0')}`;
+  };
+
+  const parseValueToCents = (value: string): number => {
+    if (!value) return 0;
+    // Extract just the numbers
+    const numericValue = value.replace(/[^\d]/g, '');
+    return parseInt(numericValue || '0');
+  };
+
+  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Only allow digits
+    const numericOnly = input.replace(/[^\d]/g, '');
+
+    if (numericOnly.length <= 6) { // Limit to R$ 9999,99
+      const formattedValue = formatCurrency(numericOnly);
+      setValor(formattedValue);
+    }
+  };
+
+  const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Only allow letters, numbers, @ and spaces, max 20 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\s]/g, '');
+    if (validChars.length <= 20) {
+      setNome(validChars);
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
 
@@ -98,11 +144,63 @@ export default function DetalhesApoio() {
       return;
     }
 
-    const valorCentavos = Math.round(parseFloat(valor) * 100);
+    // Check if campaign is already completed
+    if (apoio.valor_atual >= apoio.meta_valor || apoio.status === 'concluido') {
+      toast({
+        title: 'Campanha finalizada',
+        description: 'Esta campanha foi finalizada e não pode receber mais apoios.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate name length
+    if (nome.length < 3) {
+      toast({
+        title: 'Nome inválido',
+        description: 'O nome deve ter pelo menos 3 caracteres.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: 'Email inválido',
+        description: 'Por favor, insira um endereço de email válido.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const valorCentavos = parseValueToCents(valor);
+
+    if (valorCentavos < 100) { // Minimum R$ 1,00
+      toast({
+        title: 'Valor inválido',
+        description: 'O valor mínimo para apoio é R$ 1,00.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Check if value exceeds remaining amount needed
+    const valorRestante = apoio.meta_valor - apoio.valor_atual;
+    if (valorCentavos > valorRestante) {
+      const valorRestanteReais = valorRestante / 100;
+      toast({
+        title: 'Valor muito alto',
+        description: `O valor máximo que pode ser apoiado é R$ ${valorRestanteReais.toFixed(2).replace('.', ',')}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
       // Create checkout via edge function
-      const response = await fetch('/api/create-checkout', {
+      const response = await fetch('https://tuiwratkqezsiweocbpu.supabase.co/functions/v1/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,7 +218,19 @@ export default function DetalhesApoio() {
         })
       });
 
-      const { url } = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        toast({
+          title: 'Erro ao processar pagamento',
+          description: 'Não foi possível gerar o link de pagamento. Tente novamente.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const result = await response.json();
+      const { url } = result;
       
       // Process payment with InfinitePay
       const paymentResult = await executePayment(url);
@@ -206,6 +316,7 @@ export default function DetalhesApoio() {
   const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
   const valorAtualReais = apoio.valor_atual / 100;
   const metaValorReais = apoio.meta_valor / 100;
+  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor || apoio.status === 'concluido';
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,9 +362,16 @@ export default function DetalhesApoio() {
           {/* Progress Component */}
           <Card>
             <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
-                Progresso da campanha
+              <CardTitle className="flex items-center justify-between text-base sm:text-xl">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+                  Progresso da campanha
+                </div>
+                {campanhaFinalizada && (
+                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    META ATINGIDA
+                  </span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
@@ -279,13 +397,29 @@ export default function DetalhesApoio() {
                 </div>
               </div>
 
+              {/* Campaign completion message */}
+              {campanhaFinalizada && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-green-800 font-medium text-sm sm:text-base">
+                    {apoio.status === 'concluido'
+                      ? '🏁 Esta campanha foi finalizada pelo criador.'
+                      : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                    }
+                  </p>
+                </div>
+              )}
+
               {/* Support Button - Usa Drawer em mobile, Dialog em desktop */}
               {isMobile ? (
                 <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DrawerTrigger asChild>
-                    <Button className="w-full" size="default">
+                    <Button
+                      className="w-full"
+                      size="default"
+                      disabled={campanhaFinalizada}
+                    >
                       <Heart className="h-4 w-4 mr-2" />
-                      Apoiar agora
+                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
                     </Button>
                   </DrawerTrigger>
                     
@@ -299,23 +433,22 @@ export default function DetalhesApoio() {
                         <Label htmlFor="valor" className="text-sm">Valor do apoio (R$)</Label>
                         <Input
                           id="valor"
-                          type="number"
-                          step="0.01"
-                          min="1"
-                          placeholder="0,00"
+                          type="text"
+                          placeholder="Digite o valor (ex: 10,50)"
                           value={valor}
-                          onChange={(e) => setValor(e.target.value)}
+                          onChange={handleValorChange}
                           className="text-base"
                         />
                       </div>
-                        
+
                       <div>
                         <Label htmlFor="nome" className="text-sm">Seu nome</Label>
                         <Input
                           id="nome"
-                          placeholder="Como você quer aparecer"
+                          placeholder="Como você quer aparecer (mín. 3 chars)"
                           value={nome}
-                          onChange={(e) => setNome(e.target.value)}
+                          onChange={handleNomeChange}
+                          maxLength={20}
                           className="text-base"
                         />
                       </div>
@@ -331,14 +464,19 @@ export default function DetalhesApoio() {
                           className="text-base"
                         />
                       </div>
-                        
-                      <Button 
+
+                      <Button
                         onClick={handleApoiar}
-                        disabled={paymentLoading || !valor || !nome || !email}
+                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
                         className="w-full"
                         size="lg"
                       >
-                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                        {campanhaFinalizada
+                          ? 'Campanha finalizada'
+                          : paymentLoading
+                            ? 'Processando...'
+                            : `Apoiar com R$ ${valor || '0,00'}`
+                        }
                       </Button>
                     </div>
                   </DrawerContent>
@@ -346,9 +484,13 @@ export default function DetalhesApoio() {
               ) : (
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full" size="lg">
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      disabled={campanhaFinalizada}
+                    >
                       <Heart className="h-4 w-4 mr-2" />
-                      Apoiar agora
+                      {campanhaFinalizada ? 'Meta atingida!' : 'Apoiar agora'}
                     </Button>
                   </DialogTrigger>
                     
@@ -362,22 +504,21 @@ export default function DetalhesApoio() {
                         <Label htmlFor="valor">Valor do apoio (R$)</Label>
                         <Input
                           id="valor"
-                          type="number"
-                          step="0.01"
-                          min="1"
-                          placeholder="0,00"
+                          type="text"
+                          placeholder="Digite o valor (ex: 10,50)"
                           value={valor}
-                          onChange={(e) => setValor(e.target.value)}
+                          onChange={handleValorChange}
                         />
                       </div>
-                        
+
                       <div>
                         <Label htmlFor="nome">Seu nome</Label>
                         <Input
                           id="nome"
-                          placeholder="Como você quer aparecer"
+                          placeholder="Como você quer aparecer (mín. 3 chars)"
                           value={nome}
-                          onChange={(e) => setNome(e.target.value)}
+                          onChange={handleNomeChange}
+                          maxLength={20}
                         />
                       </div>
                         
@@ -391,14 +532,19 @@ export default function DetalhesApoio() {
                           onChange={(e) => setEmail(e.target.value)}
                         />
                       </div>
-                        
-                      <Button 
+
+                      <Button
                         onClick={handleApoiar}
-                        disabled={paymentLoading || !valor || !nome || !email}
+                        disabled={campanhaFinalizada || paymentLoading || !valor || !nome || !email}
                         className="w-full"
                         size="lg"
                       >
-                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                        {campanhaFinalizada
+                          ? 'Campanha finalizada'
+                          : paymentLoading
+                            ? 'Processando...'
+                            : `Apoiar com R$ ${valor || '0,00'}`
+                        }
                       </Button>
                     </div>
                   </DialogContent>

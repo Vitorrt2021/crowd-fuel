@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import DetalhesApoio from "./pages/DetalhesApoio";
 import CriarApoio from "./pages/CriarApoio";
+import EditarApoio from "./pages/EditarApoio";
 import MeusApoios from "./pages/MeusApoios";
 import ApoioSucesso from "./pages/ApoioSucesso";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/apoio/:id" element={<DetalhesApoio />} />
           <Route path="/criar-apoio" element={<CriarApoio />} />
+          <Route path="/editar-apoio/:id" element={<EditarApoio />} />
           <Route path="/meus-apoios" element={<MeusApoios />} />
           <Route path="/apoio-sucesso" element={<ApoioSucesso />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

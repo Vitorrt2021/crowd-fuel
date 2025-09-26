@@ -1,23 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Upload, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useInfinitepayUser } from '@/hooks/useInfinitepay';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export default function CriarApoio() {
+interface Apoio {
+  id: string;
+  titulo: string;
+  descricao: string;
+  meta_valor: number;
+  valor_atual: number;
+  imagem_url?: string;
+  handle_infinitepay: string;
+  user_id: string;
+  status: string;
+}
+
+export default function EditarApoio() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: userLoading } = useInfinitepayUser();
   const isMobile = useIsMobile();
-  
+
   const [loading, setLoading] = useState(false);
+  const [loadingApoio, setLoadingApoio] = useState(true);
+  const [finalizingCampaign, setFinalizingCampaign] = useState(false);
+  const [finalizeDialogOpen, setFinalizeDialogOpen] = useState(false);
+  const [apoio, setApoio] = useState<Apoio | null>(null);
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [metaValor, setMetaValor] = useState('');
@@ -87,13 +105,69 @@ export default function CriarApoio() {
     }
   };
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchApoio = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('apoios')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        // Check if user owns this apoio
+        if (user && data.user_id !== user.id) {
+          toast({
+            title: 'Acesso negado',
+            description: 'Você não tem permissão para editar este apoio.',
+            variant: 'destructive',
+          });
+          navigate('/meus-apoios');
+          return;
+        }
+
+        setApoio(data);
+        setTitulo(data.titulo);
+        setDescricao(data.descricao);
+        setMetaValor(formatCurrency((data.meta_valor).toString()));
+        setImagemUrl(data.imagem_url || '');
+      } catch (error) {
+        console.error('Erro ao carregar apoio:', error);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar os dados do apoio.',
+          variant: 'destructive',
+        });
+        navigate('/meus-apoios');
+      } finally {
+        setLoadingApoio(false);
+      }
+    };
+
+    if (user) {
+      fetchApoio();
+    }
+  }, [id, user, navigate, toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast({
         title: 'Usuário não encontrado',
-        description: 'É necessário estar logado no InfinitePay para criar um apoio.',
+        description: 'É necessário estar logado no InfinitePay para editar um apoio.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!apoio) {
+      toast({
+        title: 'Apoio não encontrado',
+        description: 'Não foi possível encontrar os dados do apoio.',
         variant: 'destructive',
       });
       return;
@@ -148,6 +222,17 @@ export default function CriarApoio() {
       return;
     }
 
+    // Don't allow reducing meta below current amount raised
+    if (metaValorCentavos < apoio.valor_atual) {
+      const valorAtualReais = apoio.valor_atual / 100;
+      toast({
+        title: 'Meta inválida',
+        description: `A meta não pode ser menor que o valor já arrecadado (R$ ${valorAtualReais.toFixed(2).replace('.', ',')}).`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Validate image URL if provided
     if (imagemUrl && !isValidImageUrl(imagemUrl)) {
       toast({
@@ -158,46 +243,34 @@ export default function CriarApoio() {
       return;
     }
 
-    if (!user.handle) {
-      toast({
-        title: 'Handle não encontrado',
-        description: 'Seu handle do InfinitePay não foi encontrado. Verifique sua conta.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Use the already calculated metaValorCentavos from validation
-      
       const { data, error } = await supabase
         .from('apoios')
-        .insert({
+        .update({
           titulo,
           descricao,
           meta_valor: metaValorCentavos,
           imagem_url: imagemUrl || null,
-          user_id: user.id,
-          handle_infinitepay: user.handle.replace('@', ''), // Remove @ se existir
         })
+        .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
       toast({
-        title: 'Apoio criado!',
-        description: 'Seu apoio foi criado com sucesso e já está disponível.',
+        title: 'Apoio atualizado!',
+        description: 'Suas alterações foram salvas com sucesso.',
       });
 
       navigate(`/apoio/${data.id}`);
     } catch (error) {
-      console.error('Erro ao criar apoio:', error);
+      console.error('Erro ao atualizar apoio:', error);
       toast({
-        title: 'Erro ao criar apoio',
-        description: 'Não foi possível criar seu apoio. Tente novamente.',
+        title: 'Erro ao atualizar apoio',
+        description: 'Não foi possível salvar as alterações. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -205,12 +278,75 @@ export default function CriarApoio() {
     }
   };
 
-  if (userLoading) {
+  const handleFinalizeCampaign = async () => {
+    if (!apoio) return;
+
+    setFinalizingCampaign(true);
+
+    try {
+      const { error } = await supabase
+        .from('apoios')
+        .update({ status: 'concluido' })
+        .eq('id', apoio.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Campanha finalizada!',
+        description: 'Sua campanha foi finalizada com sucesso. Não será mais possível receber apoios.',
+      });
+
+      setFinalizeDialogOpen(false);
+      navigate('/meus-apoios');
+    } catch (error) {
+      console.error('Erro ao finalizar campanha:', error);
+      toast({
+        title: 'Erro ao finalizar campanha',
+        description: 'Não foi possível finalizar a campanha. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFinalizingCampaign(false);
+    }
+  };
+
+  if (userLoading || loadingApoio) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-center">
           <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
           <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Acesso necessário</h2>
+          <p className="text-muted-foreground mb-6">
+            Você precisa estar logado no InfinitePay para editar apoios.
+          </p>
+          <Button onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para início
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!apoio) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Apoio não encontrado</h2>
+          <Button onClick={() => navigate('/meus-apoios')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para meus apoios
+          </Button>
         </div>
       </div>
     );
@@ -222,7 +358,7 @@ export default function CriarApoio() {
         {/* Navigation */}
         <Button
           variant="ghost"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/meus-apoios')}
           className="mb-4 sm:mb-6"
           size={isMobile ? "sm" : "default"}
         >
@@ -232,10 +368,22 @@ export default function CriarApoio() {
 
         <Card>
           <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-xl sm:text-2xl">Criar Novo Apoio</CardTitle>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Conte sua história e mobilize pessoas para apoiar sua causa
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl sm:text-2xl">Editar Apoio</CardTitle>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  {apoio?.status === 'concluido'
+                    ? 'Esta campanha foi finalizada e não pode receber mais apoios'
+                    : 'Faça as alterações necessárias em seu apoio'
+                  }
+                </p>
+              </div>
+              {apoio?.status === 'concluido' && (
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  FINALIZADA
+                </span>
+              )}
+            </div>
           </CardHeader>
 
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
@@ -250,6 +398,7 @@ export default function CriarApoio() {
                   onChange={handleTituloChange}
                   maxLength={100}
                   className="text-sm sm:text-base"
+                  disabled={apoio?.status === 'concluido'}
                 />
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {titulo.length}/100 caracteres
@@ -267,6 +416,7 @@ export default function CriarApoio() {
                   rows={isMobile ? 4 : 6}
                   maxLength={2000}
                   className="text-sm sm:text-base"
+                  disabled={apoio?.status === 'concluido'}
                 />
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {descricao.length}/2000 caracteres
@@ -285,10 +435,16 @@ export default function CriarApoio() {
                     value={metaValor}
                     onChange={handleMetaValorChange}
                     className="pl-10 text-sm sm:text-base"
+                    disabled={apoio?.status === 'concluido'}
                   />
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Defina uma meta realista entre R$ 1,00 e R$ 9.999.999,00
+                  {apoio.valor_atual > 0 && (
+                    <span className="block text-orange-600">
+                      Nota: A meta não pode ser menor que o valor já arrecadado (R$ {(apoio.valor_atual / 100).toFixed(2).replace('.', ',')})
+                    </span>
+                  )}
                 </p>
               </div>
 
@@ -304,6 +460,7 @@ export default function CriarApoio() {
                     value={imagemUrl}
                     onChange={(e) => setImagemUrl(e.target.value)}
                     className="pl-10 text-sm sm:text-base"
+                    disabled={apoio?.status === 'concluido'}
                   />
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -345,12 +502,51 @@ export default function CriarApoio() {
                 </div>
               )}
 
+              {/* Dialog de Finalização */}
+              {apoio?.status === 'ativo' && (
+                <Dialog open={finalizeDialogOpen} onOpenChange={setFinalizeDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" className="w-full" size={isMobile ? "default" : "default"}>
+                      Finalizar Campanha
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Finalizar Campanha</DialogTitle>
+                      <DialogDescription>
+                        Tem certeza que deseja finalizar esta campanha?
+                        <br /><br />
+                        <strong>Esta ação não pode ser desfeita.</strong> Após finalizar:
+                        <br />
+                        • A campanha não poderá receber mais apoios
+                        <br />
+                        • O status será alterado para "Finalizada"
+                        <br />
+                        • Você não poderá reativar a campanha
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setFinalizeDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleFinalizeCampaign}
+                        disabled={finalizingCampaign}
+                      >
+                        {finalizingCampaign ? 'Finalizando...' : 'Finalizar Campanha'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
               {/* Botões */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/meus-apoios')}
                   className="flex-1 order-2 sm:order-1"
                   size={isMobile ? "default" : "default"}
                 >
@@ -358,11 +554,11 @@ export default function CriarApoio() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !titulo || !descricao || !metaValor}
+                  disabled={apoio?.status === 'concluido' || loading || !titulo || !descricao || !metaValor}
                   className="flex-1 order-1 sm:order-2"
                   size={isMobile ? "default" : "default"}
                 >
-                  {loading ? 'Criando...' : 'Criar Apoio'}
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
             </form>
