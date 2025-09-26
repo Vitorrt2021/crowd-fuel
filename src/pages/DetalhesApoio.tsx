@@ -222,7 +222,8 @@ export default function DetalhesApoio() {
           customer: {
             name: nome,
             email: email
-          }
+          },
+          redirect_url: `${window.location.origin}/apoio-sucesso`
         })
       });
 
