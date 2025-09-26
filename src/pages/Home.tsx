@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ApoioCard } from '@/components/ApoioCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Heart, Menu } from 'lucide-react';
+import { Plus, Menu } from 'lucide-react';
 import { useInfinitepayUser } from '@/hooks/useInfinitepay';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
@@ -59,8 +59,12 @@ export default function Home() {
         <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Heart className="h-6 sm:h-8 w-6 sm:w-8 text-primary" />
-              <h1 className="text-lg sm:text-2xl font-bold">ApoiaColetivo</h1>
+              <img 
+                src="/assets/apoiaai.svg" 
+                alt="ApoiaAI Logo" 
+                className="h-6 sm:h-8 w-6 sm:w-8"
+              />
+              <h1 className="text-lg sm:text-2xl font-bold">ApoiaAI</h1>
             </div>
             
             {isMobile ? (
@@ -161,7 +165,11 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-8 sm:py-16">
-              <Heart className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <img 
+                src="/assets/apoiaai.svg" 
+                alt="ApoiaAI Logo" 
+                className="h-12 sm:h-16 w-12 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-50"
+              />
               <h4 className="text-lg sm:text-xl font-semibold mb-2">Nenhum apoio encontrado</h4>
               <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
                 Seja o primeiro a criar um apoio coletivo!
