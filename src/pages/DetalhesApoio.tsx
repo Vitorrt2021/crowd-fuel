@@ -388,6 +388,18 @@ export default function DetalhesApoio() {
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl font-bold">{apoio.titulo}</h1>
 
+          {/* Campaign completion message - Desktop */}
+          {campanhaFinalizada && (
+            <div className="hidden lg:block bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <p className="text-green-800 font-medium text-base">
+                {apoio.status === 'concluido'
+                  ? '🏁 Esta campanha foi finalizada pelo criador.'
+                  : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                }
+              </p>
+            </div>
+          )}
+
           {/* Desktop Layout - Image and Progress Side by Side */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-6">
             {/* Image - Desktop */}
@@ -437,18 +449,6 @@ export default function DetalhesApoio() {
                     <span>{apoiadores.length} apoiadores</span>
                   </div>
                 </div>
-
-                {/* Campaign completion message */}
-                {campanhaFinalizada && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-green-800 font-medium text-sm sm:text-base">
-                      {apoio.status === 'concluido'
-                        ? '🏁 Esta campanha foi finalizada pelo criador.'
-                        : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
-                      }
-                    </p>
-                  </div>
-                )}
 
                 {/* Support Button - Desktop */}
                 <div className="mt-auto">
