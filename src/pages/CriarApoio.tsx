@@ -78,6 +78,15 @@ export default function CriarApoio() {
     }
   };
 
+  const handleImagemUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, dots, hyphens, underscores, colons, slashes for URLs, max 500 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\.\-\_\/\:]/g, '');
+    if (validChars.length <= 500) {
+      setImagemUrl(validChars);
+    }
+  };
+
   const isValidImageUrl = (url: string): boolean => {
     try {
       const urlObj = new URL(url);
@@ -302,7 +311,7 @@ export default function CriarApoio() {
                     type="url"
                     placeholder="https://exemplo.com/sua-imagem.jpg"
                     value={imagemUrl}
-                    onChange={(e) => setImagemUrl(e.target.value)}
+                    onChange={handleImagemUrlChange}
                     className="pl-10 text-sm sm:text-base"
                   />
                 </div>

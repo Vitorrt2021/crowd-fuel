@@ -97,6 +97,15 @@ export default function DetalhesApoio() {
     }
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, @, dots, hyphens, underscores, max 100 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\.\-\_]/g, '');
+    if (validChars.length <= 100) {
+      setEmail(validChars);
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
 
@@ -479,7 +488,7 @@ export default function DetalhesApoio() {
                           type="email"
                           placeholder="seu@email.com"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={handleEmailChange}
                         />
                       </div>
 
@@ -617,7 +626,7 @@ export default function DetalhesApoio() {
                           type="email"
                           placeholder="seu@email.com"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={handleEmailChange}
                           className="text-base"
                         />
                       </div>
