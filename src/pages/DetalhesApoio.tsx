@@ -403,7 +403,7 @@ export default function DetalhesApoio() {
           {/* Desktop Layout - Image and Progress Side by Side */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-6">
             {/* Image - Desktop */}
-            <div className="overflow-hidden rounded-lg">
+            <div className="overflow-hidden rounded-lg min-h-[400px]">
               <img
                 src={apoio.imagem_url || "/placeholder.svg"}
                 alt={apoio.titulo}
@@ -413,7 +413,7 @@ export default function DetalhesApoio() {
             </div>
 
             {/* Progress Component - Desktop */}
-            <Card className="flex flex-col">
+            <Card className="flex flex-col min-h-[400px]">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center justify-between text-base sm:text-xl">
                   <div className="flex items-center gap-2">
