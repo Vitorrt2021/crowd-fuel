@@ -191,18 +191,12 @@ export default function MeusApoios() {
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                       {/* Imagem */}
                       <div className="w-full sm:w-24 h-32 sm:h-24 flex-shrink-0">
-                        {apoio.imagem_url ? (
-                          <img
-                            src={apoio.imagem_url}
-                            alt={apoio.titulo}
-                            className="w-full h-full object-cover rounded-lg"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                            <Users className="h-6 sm:h-8 w-6 sm:w-8 text-muted-foreground" />
-                          </div>
-                        )}
+                        <img
+                          src={apoio.imagem_url || "/placeholder.svg"}
+                          alt={apoio.titulo}
+                          className="w-full h-full object-cover rounded-lg"
+                          loading="lazy"
+                        />
                       </div>
 
                       {/* Conteúdo */}

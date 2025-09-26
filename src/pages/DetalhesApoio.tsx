@@ -391,16 +391,14 @@ export default function DetalhesApoio() {
           {/* Desktop Layout - Image and Progress Side by Side */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-6">
             {/* Image - Desktop */}
-            {apoio.imagem_url && (
-              <div className="aspect-[4/3] overflow-hidden rounded-lg">
-                <img
-                  src={apoio.imagem_url}
-                  alt={apoio.titulo}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+            <div className="aspect-[4/3] overflow-hidden rounded-lg">
+              <img
+                src={apoio.imagem_url || "/placeholder.svg"}
+                alt={apoio.titulo}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
 
             {/* Progress Component - Desktop */}
             <Card>
@@ -527,16 +525,14 @@ export default function DetalhesApoio() {
           {/* Mobile Layout - Image and Progress Stacked */}
           <div className="lg:hidden space-y-4 sm:space-y-6">
             {/* Image - Mobile */}
-            {apoio.imagem_url && (
-              <div className="aspect-video overflow-hidden rounded-lg">
-                <img
-                  src={apoio.imagem_url}
-                  alt={apoio.titulo}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+            <div className="aspect-video overflow-hidden rounded-lg">
+              <img
+                src={apoio.imagem_url || "/placeholder.svg"}
+                alt={apoio.titulo}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
 
             {/* Progress Component - Mobile */}
             <Card>
