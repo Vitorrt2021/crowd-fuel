@@ -1,0 +1,56 @@
+import { useState, useEffect, useCallback } from 'react';
+import { getInfinitepayUser, processCheckoutPayment, UserData, PaymentData } from '@/lib/infinitepay';
+
+export function useInfinitepayUser() {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        setLoading(true);
+        const userData = await getInfinitepayUser();
+        setUser(userData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load user');
+        // Mock user for development
+        setUser({
+          id: 'dev-user',
+          name: 'Usuário Desenvolvimento',
+          handle: 'dev-handle',
+          role: 'user'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  return { user, loading, error };
+}
+
+export function useCheckoutPayment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const executePayment = useCallback(async (checkoutUrl: string): Promise<PaymentData | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await processCheckoutPayment(checkoutUrl);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Payment failed';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { executePayment, loading, error };
+}
