@@ -143,10 +143,10 @@ export default function DetalhesApoio() {
     }
 
     // Check if campaign is already completed
-    if (apoio.valor_atual >= apoio.meta_valor) {
+    if (apoio.valor_atual >= apoio.meta_valor || apoio.status === 'concluido') {
       toast({
         title: 'Campanha finalizada',
-        description: 'Esta campanha já atingiu sua meta e não pode receber mais apoios.',
+        description: 'Esta campanha foi finalizada e não pode receber mais apoios.',
         variant: 'destructive',
       });
       return;
@@ -314,7 +314,7 @@ export default function DetalhesApoio() {
   const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
   const valorAtualReais = apoio.valor_atual / 100;
   const metaValorReais = apoio.meta_valor / 100;
-  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor;
+  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor || apoio.status === 'concluido';
 
   return (
     <div className="min-h-screen bg-background">
@@ -400,7 +400,10 @@ export default function DetalhesApoio() {
               {campanhaFinalizada && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                   <p className="text-green-800 font-medium text-sm sm:text-base">
-                    🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!
+                    {apoio.status === 'concluido'
+                      ? '🏁 Esta campanha foi finalizada pelo criador.'
+                      : '🎉 Parabéns! Esta campanha atingiu sua meta de arrecadação!'
+                    }
                   </p>
                 </div>
               )}

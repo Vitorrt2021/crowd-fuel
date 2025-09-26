@@ -25,7 +25,7 @@ export function ApoioCard({ apoio }: ApoioCardProps) {
   const progresso = (apoio.valor_atual / apoio.meta_valor) * 100;
   const valorAtualReais = apoio.valor_atual / 100;
   const metaValorReais = apoio.meta_valor / 100;
-  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor;
+  const campanhaFinalizada = apoio.valor_atual >= apoio.meta_valor || apoio.status === 'concluido';
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
