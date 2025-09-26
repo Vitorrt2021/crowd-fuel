@@ -220,253 +220,255 @@ export default function DetalhesApoio() {
         </Button>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-          {/* Left Column - Details */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            {/* Image */}
-            {apoio.imagem_url && (
-              <div className="aspect-video overflow-hidden rounded-lg">
-                <img
-                  src={apoio.imagem_url}
-                  alt={apoio.titulo}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            )}
+        <div className="space-y-4 sm:space-y-6">
+          {/* Title and Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <h1 className="text-xl sm:text-3xl font-bold flex-1">{apoio.titulo}</h1>
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "sm"}
+              onClick={compartilhar}
+              className="w-full sm:w-auto"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              {isMobile ? "Compartilhar" : "Compartilhar"}
+            </Button>
+          </div>
 
-            {/* Title and Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <h1 className="text-xl sm:text-3xl font-bold flex-1">{apoio.titulo}</h1>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                onClick={compartilhar}
-                className="w-full sm:w-auto"
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                {isMobile ? "Compartilhar" : "Compartilhar"}
-              </Button>
+          {/* Image */}
+          {apoio.imagem_url && (
+            <div className="aspect-video overflow-hidden rounded-lg">
+              <img
+                src={apoio.imagem_url}
+                alt={apoio.titulo}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
+          )}
 
-            {/* Description */}
-            <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-xl">Sobre este apoio</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
-                <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
-                    {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
-                  </div>
+          {/* Progress Component */}
+          <Card>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
+                <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+                Progresso da campanha
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
+              {/* Progress */}
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="font-medium">
+                    R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                  </span>
+                  <span className="text-muted-foreground">
+                    de R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <Progress 
+                  value={Math.min(progresso, 100)} 
+                  className="h-3 sm:h-4 bg-secondary"
+                />
+                
+                <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
+                  <span>{progresso.toFixed(1)}% concluído</span>
+                  <span>{apoiadores.length} apoiadores</span>
+                </div>
+              </div>
 
-            {/* Supporters */}
-            <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-xl">Apoiadores ({apoiadores.length})</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                {apoiadores.length > 0 ? (
-                  <div className="space-y-3 sm:space-y-4">
-                    {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
-                      <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+              {/* Support Button - Usa Drawer em mobile, Dialog em desktop */}
+              {isMobile ? (
+                <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DrawerTrigger asChild>
+                    <Button className="w-full" size="default">
+                      <Heart className="h-4 w-4 mr-2" />
+                      Apoiar agora
+                    </Button>
+                  </DrawerTrigger>
+                    
+                  <DrawerContent className="px-4 pb-6">
+                    <DrawerHeader>
+                      <DrawerTitle className="text-left">Apoiar: {apoio.titulo}</DrawerTitle>
+                    </DrawerHeader>
+                    
+                    <div className="space-y-4 mt-4">
+                      <div>
+                        <Label htmlFor="valor" className="text-sm">Valor do apoio (R$)</Label>
+                        <Input
+                          id="valor"
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          placeholder="0,00"
+                          value={valor}
+                          onChange={(e) => setValor(e.target.value)}
+                          className="text-base"
+                        />
+                      </div>
+                        
+                      <div>
+                        <Label htmlFor="nome" className="text-sm">Seu nome</Label>
+                        <Input
+                          id="nome"
+                          placeholder="Como você quer aparecer"
+                          value={nome}
+                          onChange={(e) => setNome(e.target.value)}
+                          className="text-base"
+                        />
+                      </div>
+                        
+                      <div>
+                        <Label htmlFor="email" className="text-sm">Email para contato</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="text-base"
+                        />
+                      </div>
+                        
+                      <Button 
+                        onClick={handleApoiar}
+                        disabled={paymentLoading || !valor || !nome || !email}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                      </Button>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" size="lg">
+                      <Heart className="h-4 w-4 mr-2" />
+                      Apoiar agora
+                    </Button>
+                  </DialogTrigger>
+                    
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Apoiar: {apoio.titulo}</DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="valor">Valor do apoio (R$)</Label>
+                        <Input
+                          id="valor"
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          placeholder="0,00"
+                          value={valor}
+                          onChange={(e) => setValor(e.target.value)}
+                        />
+                      </div>
+                        
+                      <div>
+                        <Label htmlFor="nome">Seu nome</Label>
+                        <Input
+                          id="nome"
+                          placeholder="Como você quer aparecer"
+                          value={nome}
+                          onChange={(e) => setNome(e.target.value)}
+                        />
+                      </div>
+                        
+                      <div>
+                        <Label htmlFor="email">Email para contato</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                        
+                      <Button 
+                        onClick={handleApoiar}
+                        disabled={paymentLoading || !valor || !nome || !email}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Details Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            {/* Left Column - Details */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+
+              {/* Description */}
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-base sm:text-xl">Sobre este apoio</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="whitespace-pre-wrap text-sm sm:text-base">{apoio.descricao}</p>
+                  <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
+                      {isMobile ? new Date(apoio.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : `Criado em ${new Date(apoio.created_at).toLocaleDateString('pt-BR')}`}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Supporters */}
+              <Card>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-base sm:text-xl">Apoiadores ({apoiadores.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  {apoiadores.length > 0 ? (
+                    <div className="space-y-3 sm:space-y-4">
+                      {apoiadores.slice(0, isMobile ? 5 : apoiadores.length).map((apoiador) => (
+                        <div key={apoiador.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                              <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-sm sm:text-base">{apoiador.nome}</p>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {new Date(apoiador.created_at).toLocaleDateString('pt-BR', isMobile ? { day: '2-digit', month: 'short' } : undefined)}
+                          <div className="text-right">
+                            <p className="font-medium text-primary text-sm sm:text-base">
+                              R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-primary text-sm sm:text-base">
-                            R$ {(apoiador.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {isMobile && apoiadores.length > 5 && (
-                      <p className="text-center text-xs text-muted-foreground pt-2">
-                        E mais {apoiadores.length - 5} apoiadores...
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
-                    Seja o primeiro a apoiar esta causa!
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Support Widget - Mobile Bottom Sheet ou Desktop Card */}
-          <div className="space-y-4 sm:space-y-6">
-            <Card className={isMobile ? "" : "sticky top-8"}>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
-                  <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
-                  Apoiar esta causa
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0 sm:pt-0">
-                {/* Progress */}
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="font-medium">
-                      R$ {valorAtualReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                    </span>
-                    <span className="text-muted-foreground">
-                      de R$ {metaValorReais.toLocaleString('pt-BR', { minimumFractionDigits: isMobile ? 0 : 2 })}
-                    </span>
-                  </div>
-                  
-                  <Progress 
-                    value={Math.min(progresso, 100)} 
-                    className="h-3 sm:h-4 bg-secondary"
-                  />
-                  
-                  <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
-                    <span>{progresso.toFixed(1)}% concluído</span>
-                    <span>{apoiadores.length} apoiadores</span>
-                  </div>
-                </div>
-
-                {/* Support Button - Usa Drawer em mobile, Dialog em desktop */}
-                {isMobile ? (
-                  <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DrawerTrigger asChild>
-                      <Button className="w-full" size="default">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Apoiar agora
-                      </Button>
-                    </DrawerTrigger>
-                    
-                    <DrawerContent className="px-4 pb-6">
-                      <DrawerHeader>
-                        <DrawerTitle className="text-left">Apoiar: {apoio.titulo}</DrawerTitle>
-                      </DrawerHeader>
-                      
-                      <div className="space-y-4 mt-4">
-                        <div>
-                          <Label htmlFor="valor" className="text-sm">Valor do apoio (R$)</Label>
-                          <Input
-                            id="valor"
-                            type="number"
-                            step="0.01"
-                            min="1"
-                            placeholder="0,00"
-                            value={valor}
-                            onChange={(e) => setValor(e.target.value)}
-                            className="text-base"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="nome" className="text-sm">Seu nome</Label>
-                          <Input
-                            id="nome"
-                            placeholder="Como você quer aparecer"
-                            value={nome}
-                            onChange={(e) => setNome(e.target.value)}
-                            className="text-base"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="email" className="text-sm">Email para contato</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="text-base"
-                          />
-                        </div>
-                        
-                        <Button 
-                          onClick={handleApoiar}
-                          disabled={paymentLoading || !valor || !nome || !email}
-                          className="w-full"
-                          size="lg"
-                        >
-                          {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
-                        </Button>
-                      </div>
-                    </DrawerContent>
-                  </Drawer>
-                ) : (
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full" size="lg">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Apoiar agora
-                      </Button>
-                    </DialogTrigger>
-                    
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Apoiar: {apoio.titulo}</DialogTitle>
-                      </DialogHeader>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="valor">Valor do apoio (R$)</Label>
-                          <Input
-                            id="valor"
-                            type="number"
-                            step="0.01"
-                            min="1"
-                            placeholder="0,00"
-                            value={valor}
-                            onChange={(e) => setValor(e.target.value)}
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="nome">Seu nome</Label>
-                          <Input
-                            id="nome"
-                            placeholder="Como você quer aparecer"
-                            value={nome}
-                            onChange={(e) => setNome(e.target.value)}
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="email">Email para contato</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                          />
-                        </div>
-                        
-                        <Button 
-                          onClick={handleApoiar}
-                          disabled={paymentLoading || !valor || !nome || !email}
-                          className="w-full"
-                          size="lg"
-                        >
-                          {paymentLoading ? 'Processando...' : `Apoiar com R$ ${valor || '0,00'}`}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </CardContent>
-            </Card>
+                      ))}
+                      {isMobile && apoiadores.length > 5 && (
+                        <p className="text-center text-xs text-muted-foreground pt-2">
+                          E mais {apoiadores.length - 5} apoiadores...
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-6 sm:py-8 text-sm sm:text-base">
+                      Seja o primeiro a apoiar esta causa!
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
