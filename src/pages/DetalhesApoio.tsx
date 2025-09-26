@@ -24,6 +24,7 @@ interface Apoio {
   imagem_url?: string;
   handle_infinitepay: string;
   created_at: string;
+  status?: string;
 }
 
 interface Apoiador {
@@ -297,7 +298,8 @@ export default function DetalhesApoio() {
   };
 
   const compartilhar = async () => {
-    if (navigator.share) {
+    // Em mobile, tenta compartilhar nativamente
+    if (isMobile && navigator.share) {
       try {
         await navigator.share({
           title: apoio?.titulo,
@@ -306,8 +308,15 @@ export default function DetalhesApoio() {
         });
       } catch (error) {
         console.log('Compartilhamento cancelado');
+        // Se falhar no mobile, copia para clipboard como fallback
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'Link copiado!',
+          description: 'O link foi copiado para a área de transferência.',
+        });
       }
     } else {
+      // Em desktop, sempre copia para área de transferência
       navigator.clipboard.writeText(window.location.href);
       toast({
         title: 'Link copiado!',
