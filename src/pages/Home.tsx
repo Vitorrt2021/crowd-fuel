@@ -4,7 +4,7 @@ import { ApoioCard } from '@/components/ApoioCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Menu } from 'lucide-react';
-import { useInfinitepayUser } from '@/hooks/useInfinitepay';
+import { useInfinitepayUser, useInfinitepayAvailability } from '@/hooks/useInfinitepay';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sheet,
@@ -29,6 +29,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useInfinitepayUser();
+  const { isAvailable: isInfinitepayAvailable } = useInfinitepayAvailability();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -68,36 +69,41 @@ export default function Home() {
             </div>
             
             {isMobile ? (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[250px]">
-                  <SheetHeader>
-                    <SheetTitle>Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-2 mt-4">
-                    <Button 
-                      onClick={() => navigate('/criar-apoio')}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar Apoio
+              // Only show menu if there are options available
+              (isInfinitepayAvailable || user) && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Menu className="h-5 w-5" />
                     </Button>
-                    {user && (
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate('/meus-apoios')}
-                        className="w-full"
-                      >
-                        Meus Apoios
-                      </Button>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[250px]">
+                    <SheetHeader>
+                      <SheetTitle>Menu</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-2 mt-4">
+                      {isInfinitepayAvailable && (
+                        <Button
+                          onClick={() => navigate('/criar-apoio')}
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Criar Apoio
+                        </Button>
+                      )}
+                      {user && (
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate('/meus-apoios')}
+                          className="w-full"
+                        >
+                          Meus Apoios
+                        </Button>
+                      )}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )
             ) : (
               <div className="flex items-center gap-4">
                 {user && (
@@ -108,10 +114,12 @@ export default function Home() {
                     Meus Apoios
                   </Button>
                 )}
-                <Button onClick={() => navigate('/criar-apoio')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Apoio
-                </Button>
+                {isInfinitepayAvailable && (
+                  <Button onClick={() => navigate('/criar-apoio')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Apoio
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -127,14 +135,16 @@ export default function Home() {
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
             Una-se a milhares de pessoas que apoiam causas importantes e fazem a diferença na vida de outros
           </p>
-          <Button 
-            size={isMobile ? "default" : "lg"}
-            onClick={() => navigate('/criar-apoio')}
-            className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
-          >
-            <Plus className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
-            Começar um Apoio
-          </Button>
+          {isInfinitepayAvailable && (
+            <Button
+              size={isMobile ? "default" : "lg"}
+              onClick={() => navigate('/criar-apoio')}
+              className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6"
+            >
+              <Plus className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
+              Começar um Apoio
+            </Button>
+          )}
         </div>
       </section>
 
@@ -172,12 +182,17 @@ export default function Home() {
               />
               <h4 className="text-lg sm:text-xl font-semibold mb-2">Nenhum apoio encontrado</h4>
               <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
-                Seja o primeiro a criar um apoio coletivo!
+                {isInfinitepayAvailable
+                  ? 'Seja o primeiro a criar um apoio coletivo!'
+                  : 'Em breve você poderá criar apoios coletivos!'
+                }
               </p>
-              <Button onClick={() => navigate('/criar-apoio')} size={isMobile ? "default" : "default"}>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Primeiro Apoio
-              </Button>
+              {isInfinitepayAvailable && (
+                <Button onClick={() => navigate('/criar-apoio')} size={isMobile ? "default" : "default"}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Apoio
+                </Button>
+              )}
             </div>
           )}
         </div>

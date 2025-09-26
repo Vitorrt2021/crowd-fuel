@@ -8,13 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Upload, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useInfinitepayUser } from '@/hooks/useInfinitepay';
+import { useInfinitepayUser, useInfinitepayAvailability } from '@/hooks/useInfinitepay';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function CriarApoio() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: userLoading } = useInfinitepayUser();
+  const { isAvailable: isInfinitepayAvailable, loading: availabilityLoading } = useInfinitepayAvailability();
   const isMobile = useIsMobile();
   
   const [loading, setLoading] = useState(false);
@@ -211,12 +212,29 @@ export default function CriarApoio() {
     }
   };
 
-  if (userLoading) {
+  if (userLoading || availabilityLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-center">
           <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
           <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isInfinitepayAvailable) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">InfinitePay não disponível</h2>
+          <p className="text-muted-foreground mb-6">
+            Para criar um apoio, é necessário ter o InfinitePay disponível.
+          </p>
+          <Button onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para início
+          </Button>
         </div>
       </div>
     );

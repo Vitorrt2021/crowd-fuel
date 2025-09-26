@@ -1,6 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getInfinitepayUser, processCheckoutPayment, UserData, PaymentData } from '@/lib/infinitepay';
 
+export function useInfinitepayAvailability() {
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAvailability = () => {
+      setLoading(true);
+      const available = typeof window !== 'undefined' && !!window.Infinitepay;
+      setIsAvailable(available);
+      setLoading(false);
+    };
+
+    // Check immediately
+    checkAvailability();
+
+    // Check after a delay to account for async loading
+    const timeout = setTimeout(checkAvailability, 1000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return { isAvailable, loading };
+}
+
 export function useInfinitepayUser() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
