@@ -80,28 +80,25 @@ export default function EditarApoio() {
 
   const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, spaces and common punctuation, max 100 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
-    if (validChars.length <= 100) {
-      setTitulo(validChars);
+    // Allow ALL characters including accented ones, max 100 characters
+    if (input.length <= 100) {
+      setTitulo(input);
     }
   };
 
   const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, spaces and common punctuation, max 2000 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;\(\)\n\r]/g, '');
-    if (validChars.length <= 2000) {
-      setDescricao(validChars);
+    // Allow ALL characters including accented ones, max 2000 characters
+    if (input.length <= 2000) {
+      setDescricao(input);
     }
   };
 
   const handleImagemUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, dots, hyphens, underscores, colons, slashes for URLs, max 500 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\.\-\_\/\:]/g, '');
-    if (validChars.length <= 500) {
-      setImagemUrl(validChars);
+    // Allow ALL characters for URLs, max 500 characters
+    if (input.length <= 500) {
+      setImagemUrl(input);
     }
   };
 
@@ -128,10 +125,10 @@ export default function EditarApoio() {
         if (error) throw error;
 
         // Check if user owns this apoio
-        if (user && data.user_id !== user.id) {
+        if (user && Number(data.user_id) !== Number(user.id)) {
           toast({
-            title: `Acesso negado ${data.user_id} ${user.id}`,
-            description: `Você não tem permissão para editar este apoio. ${JSON.stringify(data)}`,
+            title: `Acesso negado`,
+            description: `Você não tem permissão para editar este apoio.`,
             variant: 'destructive',
           });
           navigate('/meus-apoios');
