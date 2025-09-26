@@ -91,19 +91,17 @@ export default function DetalhesApoio() {
 
   const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, spaces and common punctuation, max 20 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
-    if (validChars.length <= 20) {
-      setNome(validChars);
+    // Allow ALL characters including accented ones, max 20 characters
+    if (input.length <= 20) {
+      setNome(input);
     }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Allow letters, numbers, @, dots, hyphens, underscores, max 100 characters
-    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9@\.\-\_]/g, '');
-    if (validChars.length <= 100) {
-      setEmail(validChars);
+    // Allow ALL characters for email, max 100 characters
+    if (input.length <= 100) {
+      setEmail(input);
     }
   };
 
