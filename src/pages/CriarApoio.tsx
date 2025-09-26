@@ -186,7 +186,7 @@ export default function CriarApoio() {
           meta_valor: metaValorCentavos,
           imagem_url: imagemUrl || null,
           user_id: user.id,
-          handle_infinitepay: user.handle.replace('@', ''), // Remove @ se existir
+          handle_infinitepay: user.handle.replace('$', ''), // Remove $ se existir
         })
         .select()
         .single();
@@ -322,7 +322,7 @@ export default function CriarApoio() {
                 <Label className="text-sm sm:text-base">Handle InfinitePay</Label>
                 <div className="bg-muted rounded-lg p-3 mt-1">
                   <p className="text-sm sm:text-base font-medium">
-                    @{user?.handle}
+                    ${user?.handle}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Este handle receberá os pagamentos dos apoiadores
