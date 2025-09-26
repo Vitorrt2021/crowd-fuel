@@ -22,7 +22,6 @@ export default function CriarApoio() {
   const [descricao, setDescricao] = useState('');
   const [metaValor, setMetaValor] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
-  const [handleInfinitepay, setHandleInfinitepay] = useState(user?.handle || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +35,19 @@ export default function CriarApoio() {
       return;
     }
 
-    if (!titulo || !descricao || !metaValor || !handleInfinitepay) {
+    if (!titulo || !descricao || !metaValor) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha todos os campos obrigatórios.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!user.handle) {
+      toast({
+        title: 'Handle não encontrado',
+        description: 'Seu handle do InfinitePay não foi encontrado. Verifique sua conta.',
         variant: 'destructive',
       });
       return;
@@ -58,7 +66,7 @@ export default function CriarApoio() {
           meta_valor: metaValorCentavos,
           imagem_url: imagemUrl || null,
           user_id: user.id,
-          handle_infinitepay: handleInfinitepay.replace('@', ''), // Remove @ se existir
+          handle_infinitepay: user.handle.replace('@', ''), // Remove @ se existir
         })
         .select()
         .single();
@@ -191,24 +199,17 @@ export default function CriarApoio() {
                 </p>
               </div>
 
-              {/* Handle InfinitePay */}
+              {/* Informação do Handle */}
               <div>
-                <Label htmlFor="handleInfinitepay" className="text-sm sm:text-base">Handle InfinitePay *</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                    @
-                  </span>
-                  <Input
-                    id="handleInfinitepay"
-                    placeholder="seu-handle"
-                    value={handleInfinitepay}
-                    onChange={(e) => setHandleInfinitepay(e.target.value)}
-                    className="pl-8 text-sm sm:text-base"
-                  />
+                <Label className="text-sm sm:text-base">Handle InfinitePay</Label>
+                <div className="bg-muted rounded-lg p-3 mt-1">
+                  <p className="text-sm sm:text-base font-medium">
+                    @{user?.handle}
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Este handle receberá os pagamentos dos apoiadores
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Handle que receberá os pagamentos dos apoiadores
-                </p>
               </div>
 
               {/* Preview da imagem */}
@@ -245,7 +246,7 @@ export default function CriarApoio() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !titulo || !descricao || !metaValor || !handleInfinitepay}
+                  disabled={loading || !titulo || !descricao || !metaValor}
                   className="flex-1 order-1 sm:order-2"
                   size={isMobile ? "default" : "default"}
                 >
