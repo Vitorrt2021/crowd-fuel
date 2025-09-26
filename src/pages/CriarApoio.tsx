@@ -23,6 +23,70 @@ export default function CriarApoio() {
   const [metaValor, setMetaValor] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
 
+  // Utility functions for currency formatting
+  const formatCurrency = (value: string): string => {
+    // Remove all non-numeric characters
+    let numericValue = value.replace(/[^\d]/g, '');
+
+    // Don't allow empty or just zeros
+    if (!numericValue || numericValue === '0' || numericValue === '00') {
+      return '';
+    }
+
+    // Convert to cents first, then format
+    const cents = parseInt(numericValue);
+    const reais = Math.floor(cents / 100);
+    const centavos = cents % 100;
+
+    // Always show format X,XX
+    return `${reais},${centavos.toString().padStart(2, '0')}`;
+  };
+
+  const parseValueToCents = (value: string): number => {
+    if (!value) return 0;
+    // Extract just the numbers
+    const numericValue = value.replace(/[^\d]/g, '');
+    return parseInt(numericValue || '0');
+  };
+
+  const handleMetaValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Only allow digits
+    const numericOnly = input.replace(/[^\d]/g, '');
+
+    if (numericOnly.length <= 9) { // Limit to R$ 9999999,00
+      const formattedValue = formatCurrency(numericOnly);
+      setMetaValor(formattedValue);
+    }
+  };
+
+  const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, spaces and common punctuation, max 100 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;]/g, '');
+    if (validChars.length <= 100) {
+      setTitulo(validChars);
+    }
+  };
+
+  const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const input = e.target.value;
+    // Allow letters, numbers, spaces and common punctuation, max 2000 characters
+    const validChars = input.replace(/[^a-zA-ZÀ-ÿ0-9\s\.\,\!\?\-\:\;\(\)\n\r]/g, '');
+    if (validChars.length <= 2000) {
+      setDescricao(validChars);
+    }
+  };
+
+  const isValidImageUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -44,6 +108,56 @@ export default function CriarApoio() {
       return;
     }
 
+    // Validate title length
+    if (titulo.length < 5) {
+      toast({
+        title: 'Título muito curto',
+        description: 'O título deve ter pelo menos 5 caracteres.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate description length
+    if (descricao.length < 1) {
+      toast({
+        title: 'Descrição obrigatória',
+        description: 'A descrição deve ter pelo menos 1 caracter.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const metaValorCentavos = parseValueToCents(metaValor);
+
+    if (metaValorCentavos < 100) { // Minimum R$ 1,00
+      toast({
+        title: 'Meta muito baixa',
+        description: 'A meta mínima para uma campanha é R$ 1,00.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (metaValorCentavos > 999999900) { // Maximum R$ 9999999,00
+      toast({
+        title: 'Meta muito alta',
+        description: 'A meta máxima para uma campanha é R$ 9.999.999,00.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate image URL if provided
+    if (imagemUrl && !isValidImageUrl(imagemUrl)) {
+      toast({
+        title: 'URL da imagem inválida',
+        description: 'Por favor, insira uma URL válida para a imagem.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!user.handle) {
       toast({
         title: 'Handle não encontrado',
@@ -56,7 +170,7 @@ export default function CriarApoio() {
     setLoading(true);
 
     try {
-      const metaValorCentavos = Math.round(parseFloat(metaValor) * 100);
+      // Use the already calculated metaValorCentavos from validation
       
       const { data, error } = await supabase
         .from('apoios')
@@ -131,9 +245,9 @@ export default function CriarApoio() {
                 <Label htmlFor="titulo" className="text-sm sm:text-base">Título do apoio *</Label>
                 <Input
                   id="titulo"
-                  placeholder="Dê um título marcante para seu apoio"
+                  placeholder="Dê um título marcante para seu apoio (mín. 5 chars)"
                   value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
+                  onChange={handleTituloChange}
                   maxLength={100}
                   className="text-sm sm:text-base"
                 />
@@ -149,7 +263,7 @@ export default function CriarApoio() {
                   id="descricao"
                   placeholder="Conte sua história, explique por que precisa de apoio e como os recursos serão utilizados..."
                   value={descricao}
-                  onChange={(e) => setDescricao(e.target.value)}
+                  onChange={handleDescricaoChange}
                   rows={isMobile ? 4 : 6}
                   maxLength={2000}
                   className="text-sm sm:text-base"
@@ -166,17 +280,15 @@ export default function CriarApoio() {
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="metaValor"
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    placeholder="0,00"
+                    type="text"
+                    placeholder="Digite o valor (ex: 100,00) - mín. R$ 1,00"
                     value={metaValor}
-                    onChange={(e) => setMetaValor(e.target.value)}
+                    onChange={handleMetaValorChange}
                     className="pl-10 text-sm sm:text-base"
                   />
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Defina uma meta realista para seu apoio
+                  Defina uma meta realista entre R$ 1,00 e R$ 9.999.999,00
                 </p>
               </div>
 
