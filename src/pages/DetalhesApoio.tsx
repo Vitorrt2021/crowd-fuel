@@ -352,7 +352,7 @@ export default function DetalhesApoio() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
+      <div className="container mx-auto px-6 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
