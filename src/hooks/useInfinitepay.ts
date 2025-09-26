@@ -14,7 +14,6 @@ export function useInfinitepayUser() {
         setUser(userData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load user');
-        // Mock user for development
         setUser(null);
       } finally {
         setLoading(false);
